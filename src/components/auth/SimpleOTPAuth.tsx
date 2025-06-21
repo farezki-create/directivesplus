@@ -17,7 +17,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false); // Track if OTP was successfully sent
+  const [otpSent, setOtpSent] = useState(false);
 
   const {
     attemptCount,
@@ -78,10 +78,10 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     resetAttemptCount();
   };
 
-  // Determine which step to show - prioritize OTP if it was sent successfully
+  // Determine which step to show
   const currentStep = otpSent && step === 'otp' ? 'otp' : 'email';
 
-  // Get current error from active hook
+  // Get current error and loading state
   const currentError = currentStep === 'email' ? emailSubmit.error : otpVerification.error;
   const currentLoading = currentStep === 'email' ? emailSubmit.loading : otpVerification.loading;
 
@@ -100,7 +100,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           {currentStep === 'email' ? (
             <>
               <Mail className="h-5 w-5" />
-              Connexion Sécurisée
+              Connexion Simple
             </>
           ) : (
             <>
@@ -111,8 +111,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         </CardTitle>
         <CardDescription>
           {currentStep === 'email' 
-            ? 'Saisissez votre email pour recevoir un code'
-            : `Un code a été envoyé à ${email}`
+            ? 'Saisissez votre email pour recevoir votre code de connexion'
+            : `Code envoyé à ${email}`
           }
         </CardDescription>
       </CardHeader>
@@ -126,17 +126,28 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         )}
 
         {cooldownActive && (
-          <Alert className="mb-4 border-orange-200 bg-orange-50">
-            <Clock className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800 flex items-center justify-between">
-              <span>Limite atteinte après {attemptCount} tentative(s). Attendre {cooldownSeconds} seconde(s).</span>
+          <Alert className="mb-4 border-blue-200 bg-blue-50">
+            <Clock className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 flex items-center justify-between">
+              <span>Merci de patienter {cooldownSeconds} seconde(s) avant le prochain envoi.</span>
               <button
                 onClick={resetCooldown}
-                className="text-xs underline hover:no-underline ml-2"
+                className="text-xs underline hover:no-underline ml-2 text-blue-600"
                 type="button"
               >
-                Supprimer limite
+                Continuer maintenant
               </button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Message d'aide pour les utilisateurs */}
+        {attemptCount > 2 && !cooldownActive && (
+          <Alert className="mb-4 border-yellow-200 bg-yellow-50">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <strong>Conseil :</strong> Vérifiez votre boîte de réception ET vos spams. 
+              Le code peut prendre quelques minutes à arriver.
             </AlertDescription>
           </Alert>
         )}
@@ -159,7 +170,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onGoBack={goBackToEmail}
             loading={currentLoading}
             isRateLimitActive={cooldownActive}
-            rateLimitExpiry={cooldownActive ? new Date(lastSentTime + 60000) : null}
+            rateLimitExpiry={cooldownActive ? new Date(lastSentTime + 30000) : null}
           />
         )}
       </CardContent>

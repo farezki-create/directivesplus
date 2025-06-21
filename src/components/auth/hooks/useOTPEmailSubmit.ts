@@ -57,15 +57,15 @@ export const useOTPEmailSubmit = ({
         throw signInError;
       }
 
-      // Success - increment attempt count and call onSuccess
+      // Success - gestion plus simple des tentatives
       const newAttemptCount = attemptCount + 1;
       onAttemptIncrement(newAttemptCount);
       
       console.log('✅ [SIMPLE-OTP] Email envoyé avec succès');
       
       toast({
-        title: "Code envoyé",
-        description: "Vérifiez votre boîte email pour le code à 6 chiffres.",
+        title: "Code envoyé avec succès !",
+        description: "Consultez votre boîte email (et les spams) pour le code à 6 chiffres.",
       });
 
       // Clear any previous errors before calling onSuccess
@@ -75,20 +75,30 @@ export const useOTPEmailSubmit = ({
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
+      // Gestion simplifiée des erreurs de rate limit
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        console.log('⚠️ [SIMPLE-OTP] Rate limit détecté');
+        console.log('⚠️ [SIMPLE-OTP] Rate limit détecté - gestion simplifiée');
         onRateLimitError();
         setError('');
       } else {
-        // Increment attempt count even on error
+        // Messages d'erreur plus simples et moins techniques
+        let errorMessage = 'Impossible d\'envoyer le code pour le moment.';
+        
+        if (err.message?.includes('Invalid email')) {
+          errorMessage = 'Format d\'email invalide. Vérifiez votre adresse.';
+        } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+          errorMessage = 'Problème de connexion. Vérifiez votre internet et réessayez.';
+        }
+        
+        // Incrémenter les tentatives même en cas d'erreur, mais de façon plus tolérante
         const newAttemptCount = attemptCount + 1;
         onAttemptIncrement(newAttemptCount);
         
-        setError('Erreur lors de l\'envoi du code. Vérifiez votre email et réessayez.');
+        setError(errorMessage);
         toast({
-          title: "Erreur d'envoi",
-          description: "Impossible d'envoyer le code. Vérifiez votre email.",
-          variant: "destructive",
+          title: "Envoi temporairement indisponible",
+          description: errorMessage + " Réessayez dans quelques instants.",
+          variant: "default", // Moins alarmant
         });
       }
     } finally {

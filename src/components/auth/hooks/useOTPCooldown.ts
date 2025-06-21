@@ -8,14 +8,14 @@ export const useOTPCooldown = () => {
   const [cooldownActive, setCooldownActive] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
-  // Cooldown timer
+  // Cooldown timer - réduit à 30 secondes pour être plus tolérant
   useEffect(() => {
     if (!cooldownActive) return;
 
     const interval = setInterval(() => {
       const now = Date.now();
       const timeElapsed = now - lastSentTime;
-      const remainingTime = Math.max(0, 60000 - timeElapsed); // 1 minute cooldown
+      const remainingTime = Math.max(0, 30000 - timeElapsed); // 30 secondes au lieu de 60
       
       if (remainingTime <= 0) {
         setCooldownActive(false);
@@ -34,8 +34,8 @@ export const useOTPCooldown = () => {
     setAttemptCount(newAttemptCount);
     setLastSentTime(now);
     
-    // Only activate cooldown after 3 attempts
-    if (newAttemptCount >= 3) {
+    // Activer le cooldown seulement après 5 tentatives (plus tolérant)
+    if (newAttemptCount >= 5) {
       setCooldownActive(true);
     }
   };
@@ -48,9 +48,9 @@ export const useOTPCooldown = () => {
     setCooldownActive(true);
     
     toast({
-      title: "Limite d'envoi atteinte",
-      description: "Trop de demandes récentes. Veuillez patienter 1 minute.",
-      variant: "destructive",
+      title: "Veuillez patienter",
+      description: "Un petit délai est nécessaire avant le prochain envoi. Merci de votre patience.",
+      variant: "default", // Changé de "destructive" à "default" pour être moins alarmant
     });
   };
 
@@ -61,7 +61,7 @@ export const useOTPCooldown = () => {
     setAttemptCount(0);
     
     toast({
-      title: "Cooldown supprimé",
+      title: "Prêt à continuer",
       description: "Vous pouvez maintenant renvoyer un code.",
     });
   };
@@ -69,10 +69,10 @@ export const useOTPCooldown = () => {
   const checkCooldown = () => {
     const now = Date.now();
     
-    // Check local cooldown only if we have 3+ attempts
-    if (attemptCount >= 3 && now - lastSentTime < 60000) {
-      const remainingSeconds = Math.ceil((60000 - (now - lastSentTime)) / 1000);
-      return `Veuillez patienter ${remainingSeconds} secondes avant de renvoyer un code.`;
+    // Vérifier le cooldown local seulement si on a 5+ tentatives (plus tolérant)
+    if (attemptCount >= 5 && now - lastSentTime < 30000) {
+      const remainingSeconds = Math.ceil((30000 - (now - lastSentTime)) / 1000);
+      return `Veuillez patienter ${remainingSeconds} secondes avant le prochain envoi.`;
     }
     
     return null;
