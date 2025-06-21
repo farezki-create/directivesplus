@@ -17,7 +17,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
+  const [emailSentSuccessfully, setEmailSentSuccessfully] = useState(false);
 
   const {
     attemptCount,
@@ -34,7 +34,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const emailSubmit = useOTPEmailSubmit({
     onSuccess: () => {
       console.log('📧 [SIMPLE-OTP] Email envoyé avec succès, passage à l\'étape OTP');
-      setOtpSent(true);
+      setEmailSentSuccessfully(true);
       setStep('otp');
     },
     onAttemptIncrement: startCooldown,
@@ -61,7 +61,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     if (!email) {
       emailSubmit.setError("L'adresse email n'est plus disponible. Veuillez recommencer.");
       setStep('email');
-      setOtpSent(false);
+      setEmailSentSuccessfully(false);
       return;
     }
     console.log('🔄 [SIMPLE-OTP] Renvoi du code OTP');
@@ -72,14 +72,14 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     console.log('⬅️ [SIMPLE-OTP] Retour à l\'étape email');
     setStep('email');
     setOtpCode('');
-    setOtpSent(false);
+    setEmailSentSuccessfully(false);
     emailSubmit.setError('');
     otpVerification.setError('');
     resetAttemptCount();
   };
 
-  // Determine which step to show
-  const currentStep = otpSent && step === 'otp' ? 'otp' : 'email';
+  // Determine which step to show - prioritize OTP step if email was sent successfully
+  const currentStep = emailSentSuccessfully ? 'otp' : 'email';
 
   // Get current error and loading state
   const currentError = currentStep === 'email' ? emailSubmit.error : otpVerification.error;
@@ -87,7 +87,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   console.log('🔍 [SIMPLE-OTP] État actuel:', {
     step: currentStep,
-    otpSent,
+    emailSentSuccessfully,
     email: email.substring(0, 3) + '***',
     cooldownActive,
     attemptCount
@@ -118,6 +118,25 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       </CardHeader>
 
       <CardContent>
+        {/* Alerte spéciale pour les problèmes d'envoi d'email */}
+        {attemptCount > 3 && !emailSentSuccessfully && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Problème d'envoi détecté</strong><br/>
+              Les emails ne peuvent pas être envoyés actuellement. 
+              Cela peut être dû à une surcharge temporaire du système d'envoi.
+              <br/><br/>
+              <strong>Solutions :</strong>
+              <ul className="mt-2 ml-4 list-disc">
+                <li>Attendez quelques minutes avant de réessayer</li>
+                <li>Vérifiez que votre email est correct</li>
+                <li>Contactez le support si le problème persiste</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {currentError && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -142,7 +161,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         )}
 
         {/* Message d'aide pour les utilisateurs */}
-        {attemptCount > 2 && !cooldownActive && (
+        {attemptCount > 2 && !cooldownActive && emailSentSuccessfully && (
           <Alert className="mb-4 border-yellow-200 bg-yellow-50">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">

@@ -79,7 +79,7 @@ export const useOTPEmailSubmit = ({
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
         console.log('⚠️ [SIMPLE-OTP] Rate limit détecté - gestion simplifiée');
         onRateLimitError();
-        setError('');
+        setError('Le système d\'envoi d\'emails est temporairement surchargé. Veuillez patienter avant de réessayer.');
       } else {
         // Messages d'erreur plus simples et moins techniques
         let errorMessage = 'Impossible d\'envoyer le code pour le moment.';
