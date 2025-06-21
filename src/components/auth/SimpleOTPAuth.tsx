@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,6 +17,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [attemptCount, setAttemptCount] = useState(0);
   const [lastSentTime, setLastSentTime] = useState<number>(0);
   const [cooldownActive, setCooldownActive] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
@@ -35,6 +35,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         setCooldownActive(false);
         setCooldownSeconds(0);
         setError('');
+        setAttemptCount(0); // Reset attempt count when cooldown expires
       } else {
         setCooldownSeconds(Math.ceil(remainingTime / 1000));
       }
@@ -48,8 +49,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     
     const now = Date.now();
     
-    // Check local cooldown (1 minute between requests)
-    if (now - lastSentTime < 60000) {
+    // Check local cooldown only if we have 3+ attempts
+    if (attemptCount >= 3 && now - lastSentTime < 60000) {
       const remainingSeconds = Math.ceil((60000 - (now - lastSentTime)) / 1000);
       setError(`Veuillez patienter ${remainingSeconds} secondes avant de renvoyer un code.`);
       return;
@@ -84,9 +85,16 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         throw signInError;
       }
 
-      // Success - set cooldown and proceed to OTP step
+      // Success - increment attempt count and set last sent time
+      const newAttemptCount = attemptCount + 1;
+      setAttemptCount(newAttemptCount);
       setLastSentTime(now);
-      setCooldownActive(true);
+      
+      // Only activate cooldown after 3 attempts
+      if (newAttemptCount >= 3) {
+        setCooldownActive(true);
+      }
+      
       setStep('otp');
       
       toast({
@@ -97,8 +105,12 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
+      // Increment attempt count even on error
+      const newAttemptCount = attemptCount + 1;
+      setAttemptCount(newAttemptCount);
+
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        // Set longer cooldown for rate limit
+        // Set longer cooldown for rate limit (always activate on server rate limit)
         setLastSentTime(now);
         setCooldownActive(true);
         setError('');
@@ -185,12 +197,14 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setError('');
     setCooldownActive(false);
     setCooldownSeconds(0);
+    setAttemptCount(0); // Reset attempt count when going back
   };
 
   const resetCooldown = () => {
     setCooldownActive(false);
     setCooldownSeconds(0);
     setLastSentTime(0);
+    setAttemptCount(0); // Reset attempt count when manually resetting
     setError('');
     toast({
       title: "Cooldown supprimé",
@@ -234,7 +248,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           <Alert className="mb-4 border-orange-200 bg-orange-50">
             <Clock className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800 flex items-center justify-between">
-              <span>Limite atteinte. Attendre {cooldownSeconds} seconde(s).</span>
+              <span>Limite atteinte après {attemptCount} tentative(s). Attendre {cooldownSeconds} seconde(s).</span>
               <button
                 onClick={resetCooldown}
                 className="text-xs underline hover:no-underline ml-2"
