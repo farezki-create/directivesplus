@@ -5,7 +5,6 @@ import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PublicPageButton } from "@/components/navigation/PublicPageButton";
 
 const NoAccessView = () => {
   const navigate = useNavigate();
@@ -16,7 +15,6 @@ const NoAccessView = () => {
       <main className="container mx-auto px-4 py-8 flex-grow flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
-            <PublicPageButton className="mb-6 justify-center" />
             <h2 className="text-xl font-semibold mb-4">Accès aux directives anticipées</h2>
             <p className="text-gray-600 mb-4">
               Pour consulter des directives anticipées, vous pouvez :
