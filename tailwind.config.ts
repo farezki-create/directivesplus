@@ -53,6 +53,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				nav: {
+					background: 'hsl(var(--nav-background))',
+					foreground: 'hsl(var(--nav-foreground))',
+					primary: 'hsl(var(--nav-primary))',
+					secondary: 'hsl(var(--nav-secondary))',
+					accent: 'hsl(var(--nav-accent))',
+					border: 'hsl(var(--nav-border))'
+				},
 				directiveplus: {
 					50: '#F3F1F9',
 					100: '#E7E2F3',
@@ -65,6 +73,16 @@ export default {
 					800: '#4E3999',
 					900: '#3E2993',
 				}
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'medium': 'var(--shadow-medium)',
+				'large': 'var(--shadow-large)'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-hero': 'var(--gradient-hero)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

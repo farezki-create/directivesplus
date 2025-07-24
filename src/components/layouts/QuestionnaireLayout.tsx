@@ -17,26 +17,28 @@ const QuestionnaireLayout: React.FC<QuestionnaireLayoutProps> = ({
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex bg-background">
       <AppNavigation />
       
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/rediger")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Retour à la rédaction
-          </Button>
-        </div>
-        
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-center mb-6">
-            {title}
-          </h1>
-          {children}
+      <main className="flex-1 flex flex-col">
+        <div className="container mx-auto px-4 lg:px-8 py-8">
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/rediger")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour à la rédaction
+            </Button>
+          </div>
+          
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl font-bold text-center mb-6">
+              {title}
+            </h1>
+            {children}
+          </div>
         </div>
       </main>
       

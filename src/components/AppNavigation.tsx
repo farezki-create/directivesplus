@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import ModernNavBar from "@/components/layout/ModernNavBar";
+import { ModernSidebar } from "@/components/navigation/ModernSidebar";
 
 interface AppNavigationProps {
   hideEditingFeatures?: boolean;
@@ -11,17 +11,13 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
 
   if (isLoading) {
     return (
-      <div className="h-16 bg-gray-50 border-b flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-directiveplus-600"></div>
+      <div className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-sm border-b flex items-center justify-center z-40">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  return <ModernNavBar hideEditingFeatures={hideEditingFeatures} />;
+  return <ModernSidebar hideEditingFeatures={hideEditingFeatures} />;
 };
 
 export default AppNavigation;

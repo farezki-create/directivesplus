@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SimpleOTPAuth from "@/components/auth/SimpleOTPAuth";
 import AuthDiagnostic from "@/components/debug/AuthDiagnostic";
+import { PublicPageButton } from "@/components/navigation/PublicPageButton";
 import { Info } from "lucide-react";
 
 const Auth = () => {
@@ -34,6 +35,8 @@ const Auth = () => {
       <Header />
       <main className="container mx-auto py-8 px-4">
         <div className="max-w-md mx-auto">
+          <PublicPageButton className="mb-6" />
+          
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Connexion Sécurisée

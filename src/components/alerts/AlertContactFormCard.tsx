@@ -11,13 +11,8 @@ interface AlertContactFormProps {
 }
 
 const CONTACT_TYPES = [
-  { value: 'soignant', label: 'Soignant' },
   { value: 'famille', label: 'Membre de la famille' },
   { value: 'personne_confiance', label: 'Personne de confiance' },
-  { value: 'had', label: 'HAD (Hospitalisation à domicile)' },
-  { value: 'soins_palliatifs', label: 'Unité mobile de soins palliatifs' },
-  { value: 'infirmiere', label: 'Infirmière' },
-  { value: 'medecin_traitant', label: 'Médecin traitant' },
   { value: 'autre', label: 'Autre' }
 ];
 

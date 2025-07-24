@@ -31,10 +31,10 @@ const AlertContactsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background flex">
       <AppNavigation />
       
-      <main className="container mx-auto py-8 px-4">
+      <main className="flex-1 container mx-auto py-8 px-4 lg:px-8">
         <div className="mb-6">
           <Button
             variant="outline"
