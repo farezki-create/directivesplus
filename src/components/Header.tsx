@@ -54,12 +54,6 @@ const Header = () => {
               Accueil
             </Link>
             
-            <Link
-              to="/actualites-sante"
-              className="text-gray-600 hover:text-directiveplus-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Actualités Santé
-            </Link>
             
             {isAuthenticated && (
               <Link
@@ -126,13 +120,6 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Accueil
-            </Link>
-            <Link
-              to="/actualites-sante"
-              className="text-gray-600 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Actualités Santé
             </Link>
             {isAuthenticated && (
               <Link

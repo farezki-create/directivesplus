@@ -56,39 +56,41 @@ const ModernNavBar = ({ hideEditingFeatures = false }: ModernNavBarProps) => {
   };
 
   return (
-    <nav className="w-full bg-white border-b shadow-sm sticky top-0 z-30">
+    <nav className="w-full bg-background border-b border-nav-border sticky top-0 z-30 backdrop-blur-sm bg-opacity-95">
       <div className="px-4 sm:px-8 md:px-12 lg:px-20">
         <div className="flex items-center justify-between h-16">
-          {/* Navigation centrée - plus d'espace */}
-          <ul className="flex-1 flex justify-center gap-2 md:gap-4 lg:gap-8">
+          {/* Navigation centrée avec style moderne */}
+          <ul className="flex-1 flex justify-center gap-1 md:gap-2 lg:gap-4">
             {navItems.map(({ label, icon: Icon, to }) => (
               <li key={label} className="flex">
                 <NavLink
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all
+                    `group flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl font-medium transition-all duration-300 relative
                       ${isActive
-                        ? "bg-directiveplus-50 text-directiveplus-700 shadow border border-directiveplus-200"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-directiveplus-600"}`
+                        ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
+                        : "text-foreground/80 hover:bg-primary/5 hover:text-primary hover:scale-105"}`
                   }
                   end={to === "/profile"}
                 >
-                  <Icon size={18} />
-                  <span className="hidden sm:inline">{label}</span>
+                  <Icon size={18} className="transition-transform group-hover:scale-110" />
+                  <span className="hidden sm:inline text-sm">{label}</span>
+                  {/* Effet de ligne active */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-primary rounded-full transition-all duration-300 group-hover:w-8" />
                 </NavLink>
               </li>
             ))}
           </ul>
-          {/* Déconnexion */}
+          {/* Déconnexion avec style chaleureux */}
           {isAuthenticated && (
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
-                className="flex items-center gap-2 font-semibold border border-gray-300 text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+                className="group flex items-center gap-2 font-medium border border-border text-foreground/80 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-all duration-300 rounded-xl px-4 py-2"
                 onClick={handleLogout}
               >
-                <LogOut size={18} /> 
-                <span className="hidden sm:inline">Déconnexion</span>
+                <LogOut size={18} className="transition-transform group-hover:scale-110" /> 
+                <span className="hidden sm:inline text-sm">Déconnexion</span>
               </Button>
             </div>
           )}

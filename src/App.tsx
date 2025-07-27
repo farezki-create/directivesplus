@@ -32,7 +32,7 @@ import MaintienVie from "./pages/MaintienVie";
 import MaladieAvancee from "./pages/MaladieAvancee";
 import GoutsPeurs from "./pages/GoutsPeurs";
 import ExemplesPhrases from "./pages/ExemplesPhrases";
-import HealthNews from "./pages/HealthNews";
+
 import InstitutionAccess from "./pages/InstitutionAccess";
 import MentionsLegales from "./pages/MentionsLegales";
 import LegalMentions from "./pages/LegalMentions";
@@ -49,7 +49,7 @@ import AdminMonitoring from "./pages/AdminMonitoring";
 import AdminOptimization from "./pages/AdminOptimization";
 import AdminStats from "./pages/AdminStats";
 import AdminInstitutions from "./pages/AdminInstitutions";
-import AdminHealthNews from "./pages/AdminHealthNews";
+
 import AlertContactsPage from "./pages/AlertContactsPage";
 import AlertManagementPage from "./pages/AlertManagementPage";
 
@@ -84,7 +84,7 @@ function App() {
                   <Route path="/maladie-avancee" element={<MaladieAvancee />} />
                   <Route path="/gouts-peurs" element={<GoutsPeurs />} />
                   <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
-                  <Route path="/actualites-sante" element={<HealthNews />} />
+                  
                   <Route path="/acces-institution" element={<InstitutionAccess />} />
                   <Route path="/mentions-legales" element={<MentionsLegales />} />
                   <Route path="/legal-mentions" element={<LegalMentions />} />
@@ -191,14 +191,6 @@ function App() {
                     element={
                       <ProtectedRoute requireAdmin={true}>
                         <AdminInstitutions />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/health-news" 
-                    element={
-                      <ProtectedRoute requireAdmin={true}>
-                        <AdminHealthNews />
                       </ProtectedRoute>
                     } 
                   />

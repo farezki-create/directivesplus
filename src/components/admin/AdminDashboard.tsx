@@ -112,29 +112,6 @@ export const AdminDashboard = ({ users, isLoading, onViewUserDetails }: AdminDas
               </CardContent>
             </Card>
 
-            {/* New Health News Management Card */}
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Actualités Santé
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Gérer les articles et actualités
-                    </p>
-                    <Button 
-                      onClick={() => navigate('/admin/health-news')}
-                      size="sm"
-                      className="w-full"
-                    >
-                      Gérer les actualités
-                    </Button>
-                  </div>
-                  <div className="text-3xl">📰</div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Users Table */}
