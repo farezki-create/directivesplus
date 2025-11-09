@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
       abonnes_institutions: {
@@ -382,7 +387,7 @@ export type Database = {
           email: string
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           used: boolean
           user_agent: string | null
           user_id: string
@@ -393,7 +398,7 @@ export type Database = {
           email: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           used?: boolean
           user_agent?: string | null
           user_id: string
@@ -404,7 +409,7 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           used?: boolean
           user_agent?: string | null
           user_id?: string
@@ -418,7 +423,7 @@ export type Database = {
           email: string
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           used: boolean
           user_agent: string | null
           user_id: string | null
@@ -430,7 +435,7 @@ export type Database = {
           email: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           used?: boolean
           user_agent?: string | null
           user_id?: string | null
@@ -442,7 +447,7 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           used?: boolean
           user_agent?: string | null
           user_id?: string | null
@@ -1078,7 +1083,7 @@ export type Database = {
           additional_context: Json | null
           failure_reason: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           resource_id: string
           resource_type: string
           session_id: string | null
@@ -1092,7 +1097,7 @@ export type Database = {
           additional_context?: Json | null
           failure_reason?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id: string
           resource_type: string
           session_id?: string | null
@@ -1106,7 +1111,7 @@ export type Database = {
           additional_context?: Json | null
           failure_reason?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string
           resource_type?: string
           session_id?: string | null
@@ -2064,7 +2069,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           risk_level: string | null
           user_agent: string | null
           user_id: string | null
@@ -2074,7 +2079,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           risk_level?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -2084,7 +2089,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           risk_level?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -2211,7 +2216,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message_content: string
           recipient_phone: string
           sender_name: string | null
@@ -2225,7 +2230,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_content: string
           recipient_phone: string
           sender_name?: string | null
@@ -2239,7 +2244,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_content?: string
           recipient_phone?: string
           sender_name?: string | null
@@ -2297,7 +2302,7 @@ export type Database = {
           accessor_first_name: string
           accessor_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           patient_id: string
           success: boolean
           user_agent: string | null
@@ -2309,7 +2314,7 @@ export type Database = {
           accessor_first_name: string
           accessor_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           patient_id: string
           success?: boolean
           user_agent?: string | null
@@ -2321,7 +2326,7 @@ export type Database = {
           accessor_first_name?: string
           accessor_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           patient_id?: string
           success?: boolean
           user_agent?: string | null
@@ -2586,7 +2591,7 @@ export type Database = {
           created_at: string | null
           expires_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean | null
           last_activity: string | null
           session_token: string
@@ -2598,7 +2603,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity?: string | null
           session_token: string
@@ -2610,7 +2615,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity?: string | null
           session_token?: string
@@ -2653,272 +2658,242 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_rate_limit_secure: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_identifier: string
+      check_rate_limit_secure:
+        | {
+            Args: {
               p_attempt_type: string
-              p_max_attempts?: number
-              p_window_minutes?: number
+              p_identifier: string
               p_ip_address?: unknown
+              p_max_attempts?: number
               p_user_agent?: string
+              p_window_minutes?: number
             }
-        Returns: undefined
-      }
-      check_sms_rate_limit: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_user_id: string; p_max_sms_per_hour?: number }
-        Returns: undefined
-      }
-      cleanup_expired_2fa_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_auth_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_otp_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_verification_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+            Returns: {
+              allowed: boolean
+              remaining_attempts: number
+              retry_after: number
+            }[]
+          }
+        | { Args: never; Returns: undefined }
+      check_sms_rate_limit:
+        | {
+            Args: { p_max_sms_per_hour?: number; p_user_id: string }
+            Returns: boolean
+          }
+        | { Args: never; Returns: undefined }
+      cleanup_expired_2fa_codes: { Args: never; Returns: undefined }
+      cleanup_expired_auth_codes: { Args: never; Returns: undefined }
+      cleanup_expired_otp_codes: { Args: never; Returns: undefined }
+      cleanup_expired_verification_codes: { Args: never; Returns: undefined }
+      cleanup_old_security_logs: { Args: never; Returns: undefined }
       create_user_session: {
         Args: { user_email: string; user_otp: string }
         Returns: string
       }
       debug_institution_access_step_by_step: {
         Args: {
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
+          input_last_name: string
           input_shared_code: string
         }
         Returns: {
-          step_name: string
-          found_count: number
           details: string
+          found_count: number
+          step_name: string
         }[]
       }
       debug_patient_by_lastname: {
         Args: { input_last_name: string }
         Returns: {
-          user_id: string
-          profile_id: string
-          first_name: string
-          last_name: string
           birth_date: string
+          first_name: string
           institution_shared_code: string
+          last_name: string
+          profile_id: string
+          user_id: string
         }[]
       }
       generate_2fa_code: {
         Args: {
           p_email: string
-          p_user_id: string
           p_ip_address?: unknown
           p_user_agent?: string
+          p_user_id: string
         }
         Returns: string
       }
-      generate_auth_code: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_target: string; p_channel: string; p_user_id?: string }
-        Returns: undefined
-      }
+      generate_auth_code:
+        | {
+            Args: { p_channel: string; p_target: string; p_user_id?: string }
+            Returns: string
+          }
+        | { Args: never; Returns: undefined }
       generate_confirmation_code: {
         Args: { target_email: string }
         Returns: string
       }
-      generate_institution_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_patient_access_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_random_code: {
-        Args: Record<PropertyKey, never> | { length: number }
-        Returns: string
-      }
-      generate_shared_access_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_symptom_access_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_unique_access_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_institution_code: { Args: never; Returns: string }
+      generate_patient_access_code: { Args: never; Returns: string }
+      generate_random_code:
+        | { Args: { length: number }; Returns: string }
+        | { Args: never; Returns: string }
+      generate_shared_access_code: { Args: never; Returns: string }
+      generate_symptom_access_code: { Args: never; Returns: string }
+      generate_unique_access_code: { Args: never; Returns: string }
       generate_verification_code: {
         Args: {
           p_email: string
-          p_user_id?: string
-          p_verification_type?: string
           p_ip_address?: unknown
           p_user_agent?: string
+          p_user_id?: string
+          p_verification_type?: string
         }
         Returns: string
       }
       get_directives_by_institution_code: {
         Args: {
-          input_nom: string
-          input_prenom: string
           input_date_naissance: string
           input_institution_code: string
+          input_nom: string
+          input_prenom: string
         }
         Returns: {
-          id: string
-          user_id: string
           content: Json
           created_at: string
+          id: string
+          user_id: string
         }[]
       }
       get_directives_by_shared_code: {
         Args: {
+          input_date_naissance: string
           input_nom: string
           input_prenom: string
-          input_date_naissance: string
           input_shared_code: string
         }
         Returns: {
-          id: string
-          user_id: string
-          titre: string
           contenu: string
           created_at: string
+          id: string
+          titre: string
+          user_id: string
         }[]
       }
       get_documents_with_access_code: {
         Args: {
-          p_last_name: string
-          p_first_name: string
-          p_birth_date: string
           p_access_code: string
+          p_birth_date: string
+          p_first_name: string
           p_ip_address?: string
+          p_last_name: string
           p_user_agent?: string
         }
         Returns: {
+          access_code_id: string
           document_id: string
           is_full_access: boolean
           user_id: string
-          access_code_id: string
         }[]
       }
       get_institution_accessible_patients: {
         Args: { p_institution_email: string }
         Returns: {
-          patient_nom: string
-          patient_prenom: string
-          patient_naissance: string
           date_autorisation: string
           notes: string
+          patient_naissance: string
+          patient_nom: string
+          patient_prenom: string
         }[]
       }
       get_institution_directives_complete: {
         Args: {
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
           input_institution_code: string
+          input_last_name: string
         }
         Returns: {
           access_granted: boolean
-          user_id: string
-          patient_info: Json
           directives: Json
           documents: Json
+          patient_info: Json
+          user_id: string
         }[]
       }
       get_patient_directives_by_institution: {
         Args: {
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
           input_institution_code: string
+          input_last_name: string
         }
         Returns: {
-          directive_id: string
-          directive_content: Json
           created_at: string
+          directive_content: Json
+          directive_id: string
           patient_info: Json
         }[]
       }
       get_patient_directives_by_institution_access: {
         Args: {
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
+          input_last_name: string
           input_shared_code: string
         }
         Returns: {
-          id: string
-          last_name: string
-          first_name: string
           birth_date: string
+          first_name: string
+          id: string
           institution_shared_code: string
+          last_name: string
         }[]
       }
       get_public_document: {
         Args: { doc_id: string }
         Returns: {
-          id: string
-          file_name: string
-          file_path: string
           content_type: string
-          user_id: string
           created_at: string
           description: string
-          file_size: number
-          updated_at: string
           external_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          updated_at: string
+          user_id: string
         }[]
       }
       get_shared_documents_by_access_code: {
         Args: {
           input_access_code: string
+          input_birth_date?: string
           input_first_name?: string
           input_last_name?: string
-          input_birth_date?: string
         }
         Returns: {
+          document_data: Json
           document_id: string
           document_type: string
-          document_data: Json
-          user_id: string
           shared_at: string
+          user_id: string
         }[]
       }
-      get_user_by_email: {
-        Args: { target_email: string }
-        Returns: Json
-      }
+      get_user_by_email: { Args: { target_email: string }; Returns: Json }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       institution_has_patient_access: {
         Args: {
           p_institution_email: string
+          p_patient_naissance: string
           p_patient_nom: string
           p_patient_prenom: string
-          p_patient_naissance: string
         }
         Returns: boolean
       }
@@ -2926,112 +2901,104 @@ export type Database = {
         Args: { p_institution_email: string; p_structure_name: string }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_user_admin: {
-        Args: Record<PropertyKey, never> | { user_id?: string }
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
+      is_user_admin:
+        | { Args: { user_id?: string }; Returns: boolean }
+        | { Args: never; Returns: boolean }
       log_security_event: {
         Args: {
-          _event_type: string
-          _user_id?: string
-          _ip_address?: unknown
-          _user_agent?: string
           _details?: Json
+          _event_type: string
+          _ip_address?: unknown
           _risk_level?: string
+          _user_agent?: string
+          _user_id?: string
         }
         Returns: undefined
       }
-      log_security_event_enhanced: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_event_type: string
-              p_user_id?: string
-              p_ip_address?: unknown
-              p_user_agent?: string
+      log_security_event_enhanced:
+        | {
+            Args: {
               p_details?: Json
-              p_risk_level?: string
+              p_event_type: string
+              p_ip_address?: unknown
               p_resource_id?: string
               p_resource_type?: string
+              p_risk_level?: string
+              p_user_agent?: string
+              p_user_id?: string
             }
-        Returns: string
-      }
+            Returns: string
+          }
+        | { Args: never; Returns: undefined }
       log_security_event_secure: {
         Args: {
-          p_event_type: string
-          p_user_id?: string
-          p_ip_address?: unknown
-          p_user_agent?: string
           p_details?: Json
-          p_risk_level?: string
+          p_event_type: string
+          p_ip_address?: unknown
           p_resource_id?: string
           p_resource_type?: string
+          p_risk_level?: string
+          p_user_agent?: string
+          p_user_id?: string
         }
         Returns: string
       }
-      log_sms_attempt: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_user_id: string
-              p_recipient_phone: string
-              p_message_content: string
-              p_sender_name: string
+      log_sms_attempt:
+        | {
+            Args: {
               p_ip_address?: unknown
+              p_message_content: string
+              p_recipient_phone: string
+              p_sender_name: string
               p_user_agent?: string
+              p_user_id: string
             }
-        Returns: undefined
-      }
+            Returns: string
+          }
+        | { Args: never; Returns: undefined }
       secure_document_access: {
         Args: {
-          p_document_id: string
           p_access_method: string
+          p_document_id: string
           p_ip_address?: unknown
-          p_user_agent?: string
           p_session_id?: string
+          p_user_agent?: string
         }
         Returns: {
-          id: string
+          access_granted: boolean
+          content_type: string
           file_name: string
           file_path: string
-          content_type: string
+          id: string
           user_id: string
-          access_granted: boolean
         }[]
       }
       send_auth_email_via_brevo: {
         Args: {
-          email: string
-          type: string
           confirmation_url?: string
+          email: string
           recovery_url?: string
+          type: string
           user_data?: Json
         }
         Returns: undefined
       }
-      send_sms_code: {
-        Args: Record<PropertyKey, never> | { phone: string }
-        Returns: undefined
-      }
-      update_sms_status: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_log_id: string
-              p_status: string
+      send_sms_code:
+        | { Args: { phone: string }; Returns: undefined }
+        | { Args: never; Returns: undefined }
+      update_sms_status:
+        | {
+            Args: {
               p_brevo_message_id?: string
               p_error_message?: string
+              p_log_id: string
+              p_status: string
             }
-        Returns: undefined
-      }
+            Returns: undefined
+          }
+        | { Args: never; Returns: undefined }
       validate_and_use_access_code: {
         Args: {
           _access_code: string
@@ -3039,37 +3006,41 @@ export type Database = {
           _user_agent?: string
         }
         Returns: {
-          is_valid: boolean
           document_id: string
-          user_id: string
           error_message: string
+          is_valid: boolean
+          user_id: string
         }[]
       }
-      validate_secure_document_access: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_document_id: string
+      validate_secure_document_access:
+        | {
+            Args: {
               p_access_code?: string
-              p_user_id?: string
+              p_document_id: string
               p_ip_address?: unknown
               p_user_agent?: string
+              p_user_id?: string
             }
-        Returns: undefined
-      }
-      validate_session_security: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_user_id: string
+            Returns: {
+              access_granted: boolean
+              document_data: Json
+              error_message: string
+            }[]
+          }
+        | { Args: never; Returns: undefined }
+      validate_session_security:
+        | {
+            Args: {
+              p_browser_fingerprint?: string
               p_ip_address: unknown
               p_user_agent: string
-              p_browser_fingerprint?: string
+              p_user_id: string
             }
-        Returns: undefined
-      }
+            Returns: boolean
+          }
+        | { Args: never; Returns: undefined }
       verify_2fa_code: {
-        Args: { p_email: string; p_code: string }
+        Args: { p_code: string; p_email: string }
         Returns: {
           is_valid: boolean
           user_id: string
@@ -3077,10 +3048,10 @@ export type Database = {
       }
       verify_access_identity: {
         Args: {
-          input_lastname: string
-          input_firstname: string
-          input_birthdate: string
           input_access_code: string
+          input_birthdate: string
+          input_firstname: string
+          input_lastname: string
         }
         Returns: {
           access_code: string
@@ -3093,17 +3064,23 @@ export type Database = {
           medical_profile_id: string | null
           user_id: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "shared_profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       verify_auth_code: {
-        Args: { p_target: string; p_code: string }
+        Args: { p_code: string; p_target: string }
         Returns: {
+          channel: string
           is_valid: boolean
           user_id: string
-          channel: string
         }[]
       }
       verify_code: {
-        Args: { p_email: string; p_code: string; p_verification_type?: string }
+        Args: { p_code: string; p_email: string; p_verification_type?: string }
         Returns: {
           is_valid: boolean
           user_id: string
@@ -3112,48 +3089,51 @@ export type Database = {
       }
       verify_directive_access: {
         Args: {
+          p_access_code: string
+          p_birthdate: string
           p_directive_id: string
           p_name: string
-          p_birthdate: string
-          p_access_code: string
         }
         Returns: {
-          is_valid: boolean
           directive_content: string
+          is_valid: boolean
         }[]
       }
-      verify_document_access: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
+      verify_document_access:
+        | {
+            Args: {
               p_access_code: string
+              p_birth_date: string
               p_first_name: string
               p_last_name: string
-              p_birth_date: string
             }
-        Returns: undefined
-      }
+            Returns: {
+              document_id: string
+              is_full_access: boolean
+            }[]
+          }
+        | { Args: never; Returns: undefined }
       verify_institution_access: {
         Args: {
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
           input_institution_code: string
+          input_last_name: string
         }
         Returns: {
-          user_id: string
-          first_name: string
-          last_name: string
           birth_date: string
+          first_name: string
           institution_code_valid: boolean
+          last_name: string
+          user_id: string
         }[]
       }
       verify_medical_data_access: {
         Args: {
+          p_access_code: string
+          p_birthdate: string
           p_medical_data_id: string
           p_name: string
-          p_birthdate: string
-          p_access_code: string
         }
         Returns: {
           is_valid: boolean
@@ -3166,27 +3146,27 @@ export type Database = {
       }
       verify_patient_access_with_code: {
         Args: {
-          p_last_name: string
-          p_first_name: string
-          p_birth_date: string
           p_access_code: string
+          p_birth_date: string
+          p_first_name: string
+          p_last_name: string
         }
         Returns: {
-          patient_id: string
           access_granted: boolean
+          patient_id: string
           patient_info: Json
         }[]
       }
       verify_symptom_shared_access: {
         Args: {
           input_access_code: string
-          input_last_name: string
-          input_first_name: string
           input_birth_date: string
+          input_first_name: string
+          input_last_name: string
         }
         Returns: {
-          patient_id: string
           access_granted: boolean
+          patient_id: string
           patient_info: Json
         }[]
       }
@@ -3200,21 +3180,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -3232,14 +3216,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -3255,14 +3241,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -3278,14 +3266,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -3293,14 +3283,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
