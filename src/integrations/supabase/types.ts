@@ -2658,29 +2658,25 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_rate_limit_secure:
-        | {
-            Args: {
-              p_attempt_type: string
-              p_identifier: string
-              p_ip_address?: unknown
-              p_max_attempts?: number
-              p_user_agent?: string
-              p_window_minutes?: number
-            }
-            Returns: {
-              allowed: boolean
-              remaining_attempts: number
-              retry_after: number
-            }[]
-          }
-        | { Args: never; Returns: undefined }
-      check_sms_rate_limit:
-        | {
-            Args: { p_max_sms_per_hour?: number; p_user_id: string }
-            Returns: boolean
-          }
-        | { Args: never; Returns: undefined }
+      check_rate_limit_secure: {
+        Args: {
+          p_attempt_type: string
+          p_identifier: string
+          p_ip_address?: unknown
+          p_max_attempts?: number
+          p_user_agent?: string
+          p_window_minutes?: number
+        }
+        Returns: {
+          allowed: boolean
+          remaining_attempts: number
+          retry_after: number
+        }[]
+      }
+      check_sms_rate_limit: {
+        Args: { p_max_sms_per_hour?: number; p_user_id: string }
+        Returns: boolean
+      }
       cleanup_expired_2fa_codes: { Args: never; Returns: undefined }
       cleanup_expired_auth_codes: { Args: never; Returns: undefined }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
@@ -2980,6 +2976,17 @@ export type Database = {
               p_user_id: string
             }
             Returns: string
+          }
+        | {
+            Args: {
+              p_error_message?: string
+              p_phone_number: string
+              p_provider: string
+              p_status: string
+              p_success: boolean
+              p_user_id: string
+            }
+            Returns: undefined
           }
         | { Args: never; Returns: undefined }
       secure_document_access: {
