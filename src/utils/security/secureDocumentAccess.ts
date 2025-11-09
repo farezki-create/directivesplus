@@ -55,7 +55,8 @@ export class SecureDocumentAccess {
       }
 
       // Type the data properly and check for valid response
-      const responseData = data as RPCResponse[] | null;
+      // Use 'unknown' as intermediate step since data is Json type from Supabase
+      const responseData = data as unknown as RPCResponse[] | null;
       
       if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
         return {
