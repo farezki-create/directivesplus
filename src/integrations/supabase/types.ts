@@ -3023,6 +3023,10 @@ export type Database = {
             Returns: undefined
           }
         | { Args: never; Returns: undefined }
+      user_is_conversation_participant: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
       validate_and_use_access_code: {
         Args: {
           _access_code: string
