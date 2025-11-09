@@ -2965,30 +2965,17 @@ export type Database = {
         }
         Returns: string
       }
-      log_sms_attempt:
-        | {
-            Args: {
-              p_ip_address?: unknown
-              p_message_content: string
-              p_recipient_phone: string
-              p_sender_name: string
-              p_user_agent?: string
-              p_user_id: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_error_message?: string
-              p_phone_number: string
-              p_provider: string
-              p_status: string
-              p_success: boolean
-              p_user_id: string
-            }
-            Returns: undefined
-          }
-        | { Args: never; Returns: undefined }
+      log_sms_attempt: {
+        Args: {
+          p_ip_address?: unknown
+          p_message_content: string
+          p_recipient_phone: string
+          p_sender_name: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       secure_document_access: {
         Args: {
           p_access_method: string
@@ -3076,17 +3063,15 @@ export type Database = {
             }[]
           }
         | { Args: never; Returns: undefined }
-      validate_session_security:
-        | {
-            Args: {
-              p_browser_fingerprint?: string
-              p_ip_address: unknown
-              p_user_agent: string
-              p_user_id: string
-            }
-            Returns: boolean
-          }
-        | { Args: never; Returns: undefined }
+      validate_session_security: {
+        Args: {
+          p_browser_fingerprint?: string
+          p_ip_address: unknown
+          p_user_agent: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       verify_2fa_code: {
         Args: { p_code: string; p_email: string }
         Returns: {
