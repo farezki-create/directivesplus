@@ -3003,20 +3003,16 @@ export type Database = {
         }
         Returns: undefined
       }
-      send_sms_code:
-        | { Args: { phone: string }; Returns: undefined }
-        | { Args: never; Returns: undefined }
-      update_sms_status:
-        | {
-            Args: {
-              p_brevo_message_id?: string
-              p_error_message?: string
-              p_log_id: string
-              p_status: string
-            }
-            Returns: undefined
-          }
-        | { Args: never; Returns: undefined }
+      send_sms_code: { Args: { phone: string }; Returns: undefined }
+      update_sms_status: {
+        Args: {
+          p_brevo_message_id?: string
+          p_error_message?: string
+          p_log_id: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       user_is_conversation_participant: {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean
