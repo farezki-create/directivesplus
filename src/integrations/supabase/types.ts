@@ -2751,6 +2751,15 @@ export type Database = {
         }
         Returns: string
       }
+      get_anonymized_access_logs: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          access_date: string
+          action_type: string
+          resource_type: string
+          success: boolean
+        }[]
+      }
       get_directives_by_institution_code: {
         Args: {
           input_date_naissance: string
@@ -2880,6 +2889,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_access_logs: {
+        Args: { p_user_id: string }
+        Returns: {
+          access_date: string
+          access_id: string
+          action_type: string
+          ip_address: string
+          resource_type: string
+          user_agent: string
+        }[]
+      }
       get_user_by_email: { Args: { target_email: string }; Returns: Json }
       has_role: {
         Args: {
@@ -2906,6 +2926,10 @@ export type Database = {
       is_user_admin:
         | { Args: { user_id?: string }; Returns: boolean }
         | { Args: never; Returns: boolean }
+      log_admin_feedback_access: {
+        Args: { p_feedback_id: string; p_feedback_user_id: string }
+        Returns: undefined
+      }
       log_security_event: {
         Args: {
           _details?: Json
@@ -3010,6 +3034,19 @@ export type Database = {
           error_message: string
           is_valid: boolean
           user_id: string
+        }[]
+      }
+      validate_directive_access: {
+        Args: {
+          p_access_code: string
+          p_birthdate: string
+          p_first_name: string
+          p_last_name: string
+        }
+        Returns: {
+          created_at: string
+          directive_content: Json
+          directive_id: string
         }[]
       }
       validate_secure_document_access:
@@ -3126,6 +3163,15 @@ export type Database = {
           institution_code_valid: boolean
           last_name: string
           user_id: string
+        }[]
+      }
+      verify_institution_access_with_directives: {
+        Args: { p_institution_code: string }
+        Returns: {
+          created_at: string
+          directive_content: Json
+          directive_id: string
+          pdf_documents: Json
         }[]
       }
       verify_medical_data_access: {
