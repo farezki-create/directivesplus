@@ -21,9 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Calculer isAdmin basé sur l'email
-  const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -49,6 +47,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
     }
   };
+
+  // Check admin role from database (server-side validation)
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (user?.id) {
+        console.log('🔐 [AUTH-CONTEXT] Vérification rôle admin côté serveur pour:', user.id);
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
+        
+        if (error) {
+          console.error('❌ [AUTH-CONTEXT] Erreur vérification rôle admin:', error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data);
+          console.log('✅ [AUTH-CONTEXT] Rôle admin vérifié:', !!data);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminRole();
+  }, [user?.id]);
 
   useEffect(() => {
     console.log('🔄 [AUTH-CONTEXT] Initialisation AuthContext avec gestion HDS');
