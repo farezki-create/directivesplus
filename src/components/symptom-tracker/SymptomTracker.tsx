@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Heart, Save } from "lucide-react";
+import MedicalDeviceDisclaimer from "./MedicalDeviceDisclaimer";
 import CriticalSymptomAlert from "./CriticalSymptomAlert";
 import CriticalSymptomWarning from "./CriticalSymptomWarning";
 import SymptomInputs from "./SymptomInputs";
@@ -65,6 +66,8 @@ export default function SymptomTracker() {
           <Save className="h-4 w-4 mr-2" />
           {saving ? "Enregistrement..." : alerting ? "Vérification des alertes..." : "Enregistrer"}
         </Button>
+
+        <MedicalDeviceDisclaimer compact />
       </CardContent>
     </Card>
   );

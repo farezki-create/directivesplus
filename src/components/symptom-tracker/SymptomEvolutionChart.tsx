@@ -145,21 +145,25 @@ export default function SymptomEvolutionChart({ symptoms, className }: SymptomEv
         
         {/* Légende des seuils critiques */}
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700 mb-2">Seuils d'alerte :</p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Repères indicatifs de communication :</p>
           <div className="flex flex-wrap gap-4 text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <div className="w-3 h-3 bg-red-500 rounded"></div>
-              Douleur critique : ≥ 8/10
+              Douleur élevée (auto-évaluation) : ≥ 8/10
             </span>
             <span className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-500 rounded"></div>
-              Dyspnée sévère : ≥ 7/10
+              Dyspnée élevée (auto-évaluation) : ≥ 7/10
             </span>
             <span className="flex items-center gap-1">
               <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-              Anxiété critique : ≥ 8/10
+              Anxiété élevée (auto-évaluation) : ≥ 8/10
             </span>
           </div>
+          <p className="text-xs text-gray-500 mt-2 italic">
+            Ces repères sont indicatifs et destinés à faciliter la communication avec votre équipe soignante. 
+            Ils ne constituent pas un diagnostic médical.
+          </p>
         </div>
       </CardContent>
     </Card>

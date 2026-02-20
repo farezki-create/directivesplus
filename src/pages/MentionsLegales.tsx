@@ -76,12 +76,25 @@ const MentionsLegales = () => {
                 Toute reproduction totale ou partielle de l'application ou de l'un de ses éléments, sans autorisation écrite préalable, est interdite.
               </p>
               
+              <h3 className="text-lg font-medium mt-6 mb-2">Qualification réglementaire</h3>
+              <p>
+                <strong>DirectivesPlus n'est pas un dispositif médical</strong> au sens du Règlement (UE) 2017/745 relatif aux dispositifs médicaux.
+                L'application est un outil de <strong>communication et de documentation</strong> destiné à faciliter l'expression des volontés 
+                du patient et le suivi subjectif de son ressenti. Elle ne fournit aucun diagnostic, ne propose aucune recommandation 
+                thérapeutique et ne se substitue en aucun cas à l'avis d'un professionnel de santé.
+              </p>
+              <p>
+                Les fonctionnalités de suivi de symptômes (échelles d'auto-évaluation) constituent des outils de communication 
+                entre le patient et son équipe soignante. Les repères indicatifs affichés ne sont pas des seuils diagnostiques.
+              </p>
+
               <h3 className="text-lg font-medium mt-6 mb-2">Responsabilité</h3>
               <p>L'éditeur décline toute responsabilité :</p>
               <ul className="list-disc pl-5 mb-4">
                 <li>En cas d'utilisation non conforme de l'application par les utilisateurs ou professionnels de santé,</li>
                 <li>En cas de perte ou de vol du code d'accès transmis à un tiers par l'utilisateur,</li>
-                <li>En cas de force majeure ou de dysfonctionnements techniques hors de son contrôle raisonnable.</li>
+                <li>En cas de force majeure ou de dysfonctionnements techniques hors de son contrôle raisonnable,</li>
+                <li>En cas d'interprétation des données saisies comme un diagnostic médical ou un avis thérapeutique.</li>
               </ul>
             </div>
           )}
@@ -106,8 +119,13 @@ const MentionsLegales = () => {
               <ul className="list-disc pl-5 mb-4">
                 <li>De rédiger leurs directives anticipées,</li>
                 <li>De stocker des documents médicaux,</li>
-                <li>De gérer l'accès à ces documents par des tiers de confiance ou professionnels.</li>
+                <li>De gérer l'accès à ces documents par des tiers de confiance ou professionnels,</li>
+                <li>De suivre leur ressenti subjectif via des échelles d'auto-évaluation (outil de communication, non-diagnostic).</li>
               </ul>
+              <p className="text-sm italic text-gray-600">
+                L'application n'est pas un dispositif médical. Elle ne réalise aucun diagnostic, 
+                ne fournit aucune recommandation thérapeutique et ne remplace pas la consultation d'un professionnel de santé.
+              </p>
               
               <h3 className="text-lg font-medium mt-6 mb-2">4. Données personnelles</h3>
               <p>Les données personnelles et de santé sont traitées conformément à la Politique de confidentialité, dans le respect du RGPD. L'utilisateur est responsable de la véracité et de l'actualisation de ses informations.</p>

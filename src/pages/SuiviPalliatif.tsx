@@ -9,6 +9,7 @@ import SymptomEvolutionChart from "@/components/symptom-tracker/SymptomEvolution
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useSymptomHistory } from "@/hooks/useSymptomHistory";
+import MedicalDeviceDisclaimer from "@/components/symptom-tracker/MedicalDeviceDisclaimer";
 
 const SuiviPalliatif = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -50,12 +51,15 @@ const SuiviPalliatif = () => {
         </div>
         
         <div className="max-w-6xl mx-auto space-y-8">
+          {/* Disclaimer réglementaire */}
+          <MedicalDeviceDisclaimer />
+
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
               Suivi en soins palliatifs
             </h1>
             <p className="text-gray-600 text-lg">
-              Évaluez et suivez l'évolution de vos symptômes dans le cadre de vos soins palliatifs
+              Évaluez et suivez l'évolution de votre ressenti dans le cadre de vos soins palliatifs
             </p>
           </div>
 
