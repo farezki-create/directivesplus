@@ -1,8 +1,6 @@
 
 // Utility functions for questionnaire
 export const getSectionTable = (sectionId: string): string => {
-  console.log("Getting section table for:", sectionId);
-  
   switch(sectionId) {
     case 'avis-general':
       return 'questionnaire_general_fr';
@@ -15,7 +13,7 @@ export const getSectionTable = (sectionId: string): string => {
     case 'personne-confiance':
       return 'trusted_persons';
     case 'exemples-phrases':
-      return 'articles'; // Assuming example phrases are stored in articles table
+      return 'articles';
     default:
       console.warn(`No table mapping found for section: ${sectionId}`);
       return '';
@@ -31,19 +29,12 @@ export const getResponseTable = (sectionId: string): string => {
 
 export const getSectionTitle = (pageId: string | undefined): string => {
   switch(pageId) {
-    case 'avis-general': 
-      return "Avis Général";
-    case 'maintien-vie': 
-      return "Maintien de la Vie";
-    case 'maladie-avancee': 
-      return "Maladie Avancée";
-    case 'gouts-peurs': 
-      return "Mes Goûts et Mes Peurs";
-    case 'personne-confiance': 
-      return "Personne de Confiance";
-    case 'exemples-phrases': 
-      return "Exemples de Phrases";
-    default:
-      return "";
+    case 'avis-general': return "Avis Général";
+    case 'maintien-vie': return "Maintien de la Vie";
+    case 'maladie-avancee': return "Maladie Avancée";
+    case 'gouts-peurs': return "Mes Goûts et Mes Peurs";
+    case 'personne-confiance': return "Personne de Confiance";
+    case 'exemples-phrases': return "Exemples de Phrases";
+    default: return "";
   }
 };

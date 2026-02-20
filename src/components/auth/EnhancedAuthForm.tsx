@@ -33,7 +33,6 @@ const EnhancedAuthForm = () => {
   }
 
   const handleAuthSuccess = () => {
-    console.log("Authentification réussie");
     navigate('/profile');
   };
 

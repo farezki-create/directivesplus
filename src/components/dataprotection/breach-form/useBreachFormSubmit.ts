@@ -14,7 +14,7 @@ export const useBreachFormSubmit = (onSuccessCallback?: () => void) => {
   const handleSubmit = async (data: FormSchema) => {
     setIsSubmitting(true);
     try {
-      console.log("Soumission du formulaire de violation:", data);
+      
       
       const notificationData = {
         breach_type: data.breach_type,

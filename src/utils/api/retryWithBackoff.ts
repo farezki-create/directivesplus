@@ -19,11 +19,8 @@ export const retryWithBackoff = async <T>(
         throw err;
       }
       
-      // Calculate backoff time (exponential with max of 10 seconds)
       const backoffTime = Math.min(Math.pow(2, currentRetry) * 1000, 10000);
-      console.log(`Retry ${currentRetry + 1}/${maxRetries + 1} failed. Retrying in ${backoffTime}ms...`);
       
-      // Call onRetry callback if provided
       if (onRetry) {
         onRetry(currentRetry);
       }

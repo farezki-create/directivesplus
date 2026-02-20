@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast"; // Update import to use the correct path
+import { toast } from "@/hooks/use-toast";
 import { TrustedPerson } from "./types";
 
 export const useTrustedPersons = (userId: string | undefined) => {
@@ -11,13 +11,11 @@ export const useTrustedPersons = (userId: string | undefined) => {
 
   const fetchTrustedPersons = async () => {
     if (!userId) {
-      console.log("No user ID provided, cannot fetch trusted persons");
       setLoading(false);
       return;
     }
 
     try {
-      console.log("Fetching trusted persons for user:", userId);
       setLoading(true);
       const { data, error } = await supabase
         .from("trusted_persons")
@@ -28,7 +26,6 @@ export const useTrustedPersons = (userId: string | undefined) => {
       if (error) throw error;
 
       setTrustedPersons(data || []);
-      console.log("Trusted persons loaded:", data);
     } catch (error: any) {
       console.error("Error fetching trusted persons:", error.message);
       toast({
@@ -52,7 +49,6 @@ export const useTrustedPersons = (userId: string | undefined) => {
       postal_code: "",
     };
     
-    // Add temporary ID for UI purposes
     setTrustedPersons([...trustedPersons, { ...newPerson, id: `temp-${Date.now()}` }]);
   };
 
@@ -72,25 +68,18 @@ export const useTrustedPersons = (userId: string | undefined) => {
   };
 
   const handleSave = async () => {
-    if (!userId) {
-      console.log("No user ID provided, cannot save trusted persons");
-      return;
-    }
+    if (!userId) return;
 
     try {
-      console.log("Saving trusted persons for user:", userId);
       setSaving(true);
 
-      // Filter out invalid entries (must have at least a name)
       const validPersons = trustedPersons.filter(person => person.name.trim() !== "");
       
       if (validPersons.length === 0) {
-        // If no valid persons, just refresh the list from database
         await fetchTrustedPersons();
         return;
       }
 
-      // First delete all existing persons for this user
       const { error: deleteError } = await supabase
         .from("trusted_persons")
         .delete()
@@ -98,7 +87,6 @@ export const useTrustedPersons = (userId: string | undefined) => {
 
       if (deleteError) throw deleteError;
 
-      // Then insert all current persons
       const personsWithUserId = validPersons.map(person => ({
         name: person.name,
         phone: person.phone || null,
@@ -121,7 +109,6 @@ export const useTrustedPersons = (userId: string | undefined) => {
         description: "Vos personnes de confiance ont été enregistrées.",
       });
 
-      // Refresh the list to get the server-generated IDs
       await fetchTrustedPersons();
     } catch (error: any) {
       console.error("Error saving trusted persons:", error.message);
@@ -135,9 +122,7 @@ export const useTrustedPersons = (userId: string | undefined) => {
     }
   };
 
-  // Fetch trusted persons on component mount
   useEffect(() => {
-    console.log("useTrustedPersons hook initialized with userId:", userId);
     fetchTrustedPersons();
   }, [userId]);
 

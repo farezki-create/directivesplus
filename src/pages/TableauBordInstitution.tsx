@@ -1,4 +1,3 @@
-
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +15,6 @@ const TableauBordInstitution = () => {
   const { accessRights, loading, error } = useAccessRights();
 
   const handleViewDirectives = (patient: any) => {
-    // Navigation vers les directives du patient
-    console.log("Voir les directives de:", patient);
     // TODO: Implémenter la navigation vers les directives
   };
 
@@ -46,7 +43,6 @@ const TableauBordInstitution = () => {
             </p>
           </div>
 
-          {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -55,9 +51,7 @@ const TableauBordInstitution = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{accessRights.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Patients autorisés
-                </p>
+                <p className="text-xs text-muted-foreground">Patients autorisés</p>
               </CardContent>
             </Card>
 
@@ -74,9 +68,7 @@ const TableauBordInstitution = () => {
                     return new Date(right.date_autorisation) > weekAgo;
                   }).length}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Nouveaux accès
-                </p>
+                <p className="text-xs text-muted-foreground">Nouveaux accès</p>
               </CardContent>
             </Card>
 
@@ -87,14 +79,11 @@ const TableauBordInstitution = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">Actif</div>
-                <p className="text-xs text-muted-foreground">
-                  Institution validée
-                </p>
+                <p className="text-xs text-muted-foreground">Institution validée</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Liste des patients */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -143,9 +132,7 @@ const TableauBordInstitution = () => {
                     <TableBody>
                       {accessRights.map((right) => (
                         <TableRow key={right.id}>
-                          <TableCell className="font-medium">
-                            {right.patient_nom}
-                          </TableCell>
+                          <TableCell className="font-medium">{right.patient_nom}</TableCell>
                           <TableCell>{right.patient_prenom}</TableCell>
                           <TableCell>
                             {format(new Date(right.patient_naissance), 'dd/MM/yyyy', { locale: fr })}
@@ -185,7 +172,6 @@ const TableauBordInstitution = () => {
             </CardContent>
           </Card>
 
-          {/* Informations de sécurité */}
           <div className="mt-8">
             <Alert>
               <Shield className="h-4 w-4" />

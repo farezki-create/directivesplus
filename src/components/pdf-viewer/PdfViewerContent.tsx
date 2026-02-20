@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Download, Globe } from "lucide-react";
@@ -11,6 +11,7 @@ import PdfLoadingOverlay from "./PdfLoadingOverlay";
 import PdfErrorOverlay from "./PdfErrorOverlay";
 import PdfInstructions from "./PdfInstructions";
 import ChromeBlockedFallback from "./ChromeBlockedFallback";
+import { useState as useStateHook, useEffect } from "react";
 
 interface Document {
   id: string;
@@ -40,7 +41,6 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   const [showAlternativeOptions, setShowAlternativeOptions] = useState(false);
   const { isMobile, isTablet, isMobileOrTablet } = useMobileDetection();
 
-  // Reset loading state when document changes
   useEffect(() => {
     if (document?.file_path) {
       setPdfLoading(true);
@@ -52,8 +52,6 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   }, [document?.file_path]);
 
   const handleDirectDownload = useCallback(() => {
-    console.log("Téléchargement direct pour:", document.file_name);
-    
     const link = window.document.createElement('a');
     link.href = document.file_path;
     link.download = document.file_name;
@@ -66,7 +64,6 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   }, [document.file_name, document.file_path]);
 
   const handleOpenInNewTab = useCallback(() => {
-    console.log("Ouverture dans un nouvel onglet:", document.file_path);
     const newWindow = window.open(document.file_path, '_blank', 'noopener,noreferrer');
     if (!newWindow) {
       setShowAlternativeOptions(true);
@@ -79,21 +76,17 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   }, [document.file_path]);
 
   const handleIframeLoad = useCallback(() => {
-    console.log("PDF iframe loaded");
-    
     setTimeout(() => {
       const iframe = window.document.querySelector(`iframe[title="${document.file_name}"]`) as HTMLIFrameElement;
       if (iframe) {
         try {
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
           if (!iframeDoc || iframeDoc.title.includes('blocked') || iframeDoc.body?.innerText.includes('bloquée')) {
-            console.log("Chrome a bloqué l'affichage du PDF");
             setIsChromeBlocked(true);
             setPdfLoading(false);
             return;
           }
         } catch (error) {
-          console.log("Accès iframe bloqué, probablement par Chrome");
           setIsChromeBlocked(true);
           setPdfLoading(false);
           return;
@@ -103,7 +96,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       setPdfLoading(false);
       setPdfError(false);
       setIsChromeBlocked(false);
-    }, isMobileOrTablet ? 3000 : 2000); // Plus de temps sur mobile/tablette
+    }, isMobileOrTablet ? 3000 : 2000);
   }, [document.file_name, isMobileOrTablet]);
 
   const handleIframeError = useCallback(() => {
@@ -112,14 +105,12 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     setPdfError(true);
     setIsChromeBlocked(false);
     
-    // Afficher automatiquement les options alternatives après une erreur
     setTimeout(() => {
       setShowAlternativeOptions(true);
     }, 1000);
   }, []);
 
   const handleRetry = useCallback(() => {
-    console.log("Retry PDF loading");
     setPdfLoading(true);
     setPdfError(false);
     setIsChromeBlocked(false);
@@ -179,14 +170,12 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       <div className="container mx-auto p-4">
         <MobileAlert isMobile={isMobile} isTablet={isTablet} />
 
-        {/* Options d'ouverture privilégiées */}
         {(showAlternativeOptions || isMobileOrTablet) && (
           <div className="mb-4 p-6 bg-blue-50 rounded-lg border border-blue-200">
             <h3 className="font-semibold text-blue-900 mb-4 text-center">
               Choisissez votre option préférée
             </h3>
             
-            {/* Options principales */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Button
                 onClick={handleOpenInNewTab}
@@ -213,7 +202,6 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
               </Button>
             </div>
 
-            {/* Option alternative */}
             <div className="pt-3 border-t border-blue-200">
               <p className="text-sm text-blue-700 mb-2">Option alternative :</p>
               <Button

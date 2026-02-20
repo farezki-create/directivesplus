@@ -26,27 +26,17 @@ export const useProfileFetch = ({ user, authProfile }: UseProfileFetchProps) => 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        if (!user || !user.id) {
-          console.log("No user found in context");
-          return;
-        }
+        if (!user || !user.id) return;
 
-        console.log("Fetching profile for user ID:", user.id);
-
-        // Try to use the profile from auth context first
         if (authProfile) {
-          console.log("Using profile from context:", authProfile);
           const enrichedProfile = enrichProfileWithUserData(authProfile, user);
-          
           setProfile(enrichedProfile as Profile);
           const initialValues = transformProfileToFormValues(enrichedProfile as Profile, user.email || "");
           setFormValues(initialValues);
           setIsLoading(false);
-          console.log("Form values set from auth context:", initialValues);
           return;
         }
 
-        // Get the user's profile from Supabase if not in auth context
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -59,9 +49,7 @@ export const useProfileFetch = ({ user, authProfile }: UseProfileFetchProps) => 
             description: error.message,
           });
           
-          // If the profile doesn't exist, create it from user metadata
           if (error.code === 'PGRST116') {
-            console.log("Profile not found, attempting to create from metadata");
             await createProfileFromMetadata(user.id, user, setProfile, setFormValues);
           }
           
@@ -69,16 +57,11 @@ export const useProfileFetch = ({ user, authProfile }: UseProfileFetchProps) => 
         }
 
         if (data) {
-          console.log("Profile data loaded:", data);
-          
           const enrichedProfile = enrichProfileWithUserData(data, user);
           setProfile(enrichedProfile as Profile);
-          
           const initialValues = transformProfileToFormValues(enrichedProfile as Profile, user.email || "");
           setFormValues(initialValues);
-          console.log("Form values set:", initialValues);
         } else {
-          console.log("No profile data found for user ID:", user.id);
           await createProfileFromMetadata(user.id, user, setProfile, setFormValues);
         }
       } catch (error: any) {

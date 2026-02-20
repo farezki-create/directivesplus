@@ -45,7 +45,7 @@ export const AccessForm = ({ onSubmit, loading, error, initialCode, verification
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting form with values:", form);
+    
     onSubmit(form);
   };
 

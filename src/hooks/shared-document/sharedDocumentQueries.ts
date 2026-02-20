@@ -7,7 +7,6 @@ export const searchExactMatch = async (shareCode: string) => {
     .select('*')
     .eq('access_code', shareCode);
 
-  console.log("3. Recherche exacte shared_documents:", { exactMatch, exactError });
   return { exactMatch, exactError };
 };
 
@@ -17,7 +16,6 @@ export const searchAccessCodes = async (shareCode: string) => {
     .select('*')
     .eq('access_code', shareCode);
 
-  console.log("4. Recherche dans document_access_codes:", { accessCodes, accessError });
   return { accessCodes, accessError };
 };
 

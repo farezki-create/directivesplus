@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 export const useDocumentPrint = () => {
   const handlePrint = (filePath: string, fileType: string = "") => {
     try {
-      console.log("useDocumentPrint - handlePrint appelé pour:", filePath, fileType);
+      
       
       // Handle data URLs (like base64 PDFs)
       if (filePath.startsWith('data:')) {

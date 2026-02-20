@@ -7,14 +7,10 @@ const IndexHeader = () => {
   const { isAuthenticated, signOut } = useAuth();
 
   const handleSignOut = async () => {
-    console.log("🔴 === IndexHeader: BOUTON DÉCONNEXION CLIQUÉ === 🔴");
-    
     try {
       await signOut();
     } catch (error) {
-      console.error('❌ IndexHeader: Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, forcer la redirection radicale
-      console.log("🚨 IndexHeader: REDIRECTION DE SECOURS");
+      console.error('IndexHeader: Erreur lors de la déconnexion:', error);
       window.location.replace('/auth');
     }
   };

@@ -20,8 +20,6 @@ const SecureDirectivesAccess = () => {
       if (!isAuthenticated || !user?.id) return;
       
       try {
-        console.log("Loading directives for authenticated user:", user.id);
-        
         const authResult = await getAuthUserDossier(user.id, "directive");
         
         if (authResult.success) {

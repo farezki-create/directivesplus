@@ -27,9 +27,6 @@ const QuestionnaireSection = () => {
   
   useEffect(() => {
     if (pageId && !hasInitialized && !loading) {
-      console.log("QuestionnaireSection - pageId:", pageId);
-      console.log("QuestionnaireSection - questions:", questions);
-      console.log("QuestionnaireSection - responses:", responses);
       setHasInitialized(true);
     }
   }, [pageId, questions, loading, responses, hasInitialized]);
