@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     }
 
     const requestData: TestMessageRequest = await req.json()
-    console.log('Test message request:', requestData)
+    
 
     // Configuration Twilio depuis les variables d'environnement
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
@@ -63,8 +63,7 @@ Deno.serve(async (req) => {
       }
 
       if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-        console.log('Configuration Twilio manquante - simulation uniquement')
-        console.log(`SMS Twilio simulé envoyé à ${requestData.phone_number}: ${requestData.message}`)
+        console.warn('Configuration Twilio manquante - simulation uniquement')
         
         return new Response(
           JSON.stringify({ 
@@ -99,7 +98,7 @@ Deno.serve(async (req) => {
         }
 
         const result = await response.json()
-        console.log('SMS envoyé avec succès via Twilio:', result.sid)
+        
 
         return new Response(
           JSON.stringify({ 
@@ -130,8 +129,7 @@ Deno.serve(async (req) => {
       }
 
       if (!WHATSAPP_TOKEN) {
-        console.log('Configuration WhatsApp manquante - simulation uniquement')
-        console.log(`WhatsApp simulé envoyé à ${requestData.whatsapp_number}: ${requestData.message}`)
+        console.warn('Configuration WhatsApp manquante - simulation uniquement')
         
         return new Response(
           JSON.stringify({ 
@@ -145,7 +143,7 @@ Deno.serve(async (req) => {
       }
 
       // Ici vous pourriez ajouter l'intégration WhatsApp Business API
-      console.log(`WhatsApp envoyé à ${requestData.whatsapp_number}: ${requestData.message}`)
+      
       
       return new Response(
         JSON.stringify({ 

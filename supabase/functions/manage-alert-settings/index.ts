@@ -87,10 +87,7 @@ Deno.serve(async (req) => {
       
       try {
         const bodyText = await req.text();
-        console.log('Received body text:', bodyText);
-        
         if (!bodyText || bodyText.trim() === '') {
-          console.log('Empty body received, using default settings');
           body = { settings: {} };
         } else {
           body = JSON.parse(bodyText);
@@ -114,7 +111,7 @@ Deno.serve(async (req) => {
         whatsapp_number: ''
       };
 
-      console.log('Processing settings:', settings);
+      
 
       const dataToSave = {
         patient_id: userId,
@@ -127,7 +124,7 @@ Deno.serve(async (req) => {
         whatsapp_number: settings.whatsapp_number || null
       };
 
-      console.log('Data to save:', dataToSave);
+      
 
       const { error } = await supabaseClient
         .from('patient_alert_settings')
@@ -143,7 +140,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      console.log('Settings saved successfully');
+      
 
       return new Response(
         JSON.stringify({ 

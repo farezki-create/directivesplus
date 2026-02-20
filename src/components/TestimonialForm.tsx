@@ -36,11 +36,7 @@ const TestimonialForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Ici, on simule l'envoi du témoignage à la base de données
-      // Dans une vraie implémentation, vous utiliseriez Supabase
-      console.log('Témoignage soumis:', data);
-      
-      // Simuler un délai pour l'envoi
+      // Simuler l'envoi du témoignage
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({

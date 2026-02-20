@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,7 +26,6 @@ const QRCodeDiagnostic: React.FC<QRCodeDiagnosticProps> = ({ documentId, userId 
       error,
       timestamp: new Date().toISOString()
     };
-    console.log(`🔍 QR Diagnostic - ${step}:`, result);
     setResults(prev => [...prev, result]);
   };
 
@@ -38,9 +36,8 @@ const QRCodeDiagnostic: React.FC<QRCodeDiagnosticProps> = ({ documentId, userId 
     // Étape 1: Vérifier la connexion Supabase
     addResult("1. Connexion Supabase", true, { url: "https://kytqqjnecezkxyhmmjrz.supabase.co" });
 
-    // Étape 2: Test fonction RPC publique (maintenant corrigée)
+    // Étape 2: Test fonction RPC publique
     try {
-      console.log("🔍 Test fonction RPC publique avec RLS corrigé");
       const { data: rpcData, error: rpcError } = await supabase
         .rpc('get_public_document', { doc_id: documentId });
 
@@ -62,7 +59,6 @@ const QRCodeDiagnostic: React.FC<QRCodeDiagnosticProps> = ({ documentId, userId 
 
     // Étape 3: Test accès direct avec nouvelle politique RLS
     try {
-      console.log("🔍 Test accès direct avec politique RLS publique");
       const { data: directAccess, error: directError } = await supabase
         .from('pdf_documents')
         .select('*')
@@ -93,7 +89,7 @@ const QRCodeDiagnostic: React.FC<QRCodeDiagnosticProps> = ({ documentId, userId 
           isAuthenticated: !!session,
           userId: session?.user?.id,
           expectedUserId: userId,
-          auth_required: false // Plus nécessaire avec RLS public
+          auth_required: false
         },
         authError?.message
       );

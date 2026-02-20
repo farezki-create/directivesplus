@@ -12,9 +12,6 @@ export const useRegister = () => {
     setIsLoading(true);
     
     try {
-      console.log("🚀 Inscription avec Supabase Auth natif");
-      console.log("📧 Email:", values.email);
-      
       // Nettoyer l'état d'authentification
       await supabase.auth.signOut();
 
@@ -57,8 +54,6 @@ export const useRegister = () => {
       }
 
       if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
-        
         if (!data.user.email_confirmed_at) {
           toast({
             title: "Inscription réussie !",

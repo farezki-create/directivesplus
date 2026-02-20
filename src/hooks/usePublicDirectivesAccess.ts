@@ -26,14 +26,12 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
 
   useEffect(() => {
     if (!isAuthenticated && documents.length > 0 && !publicAccessVerified) {
-      console.log("Accès public déjà vérifié via le store directives");
       setPublicAccessVerified(true);
     }
   }, [documents, isAuthenticated, publicAccessVerified]);
 
   useEffect(() => {
     if (institutionAccess.accessGranted && !publicAccessVerified) {
-      console.log("Accès institution accordé, marquage comme vérifié");
       setPublicAccessVerified(true);
     }
   }, [institutionAccess.accessGranted, publicAccessVerified]);
@@ -43,9 +41,7 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
     
     setPublicAccessLoading(true);
     try {
-      console.log("Vérification de l'accès public:", formData);
-      
-      const result = await verifierCode(formData.accessCode, 
+      const result = await verifierCode(formData.accessCode,
         `directives_public_${formData.firstName}_${formData.lastName}`);
       
       if (!validateDossierResponse({ success: !!result, dossier: result, error: !result ? "Code invalide" : null })) {

@@ -11,14 +11,6 @@ export const useBrowserDetection = () => {
       const protocol = window.location.protocol;
       const hasInAppParam = window.location.search.includes('inapp=true');
       
-      console.log('useBrowserDetection: Informations détectées:', {
-        userAgent: userAgent.substring(0, 100) + '...', // Truncate for readability
-        hostname,
-        protocol,
-        hasInAppParam,
-        fullUrl: window.location.href
-      });
-      
       // Détection plus précise
       const isLovableApp = hostname === 'localhost' || 
                           hostname.includes('lovableproject.com') ||
@@ -35,17 +27,8 @@ export const useBrowserDetection = () => {
         userAgent.includes('edge')
       );
       
-      console.log('useBrowserDetection: Résultat de détection:', { 
-        isLovableApp,
-        isMobileBrowser,
-        isDesktopBrowser,
-        finalResult: !isLovableApp && (isMobileBrowser || isDesktopBrowser)
-      });
-      
       const result = !isLovableApp && (isMobileBrowser || isDesktopBrowser);
       setIsExternalBrowser(result);
-      
-      console.log('useBrowserDetection: isExternalBrowser défini à:', result);
     };
     
     detectBrowser();

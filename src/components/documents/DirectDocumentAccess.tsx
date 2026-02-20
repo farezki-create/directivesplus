@@ -29,8 +29,6 @@ export function DirectDocumentAccess() {
       }
 
       try {
-        console.log("=== SECURE DOCUMENT ACCESS ===");
-        console.log("Document ID:", documentId);
 
         // Get client information for audit logging
         const clientInfo = {
@@ -105,7 +103,7 @@ export function DirectDocumentAccess() {
           p_resource_type: 'pdf_document'
         });
 
-        console.log("Secure access granted to document");
+        
 
       } catch (error: any) {
         console.error("Erreur lors du chargement sécurisé:", error);

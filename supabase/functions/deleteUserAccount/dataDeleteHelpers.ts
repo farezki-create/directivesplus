@@ -48,10 +48,9 @@ export async function deleteUserData(supabase: SupabaseClient, userId: string): 
         .delete()
         .eq("user_id", userId);
       
-      console.log(`${operation.description} deleted`);
       results.push({table: operation.table, success: true});
     } catch (err) {
-      console.log(`Error deleting ${operation.description}:`, err);
+      console.error(`Error deleting ${operation.description}:`, err);
       results.push({
         table: operation.table, 
         success: false, 

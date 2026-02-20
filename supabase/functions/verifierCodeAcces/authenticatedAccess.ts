@@ -5,10 +5,6 @@ import { StandardResponse } from "./types.ts";
 
 /**
  * Get authenticated user dossier without requiring an access code
- * @param supabase Supabase client
- * @param userId User ID
- * @param accessType Optional access type specification
- * @returns Standard response with dossier if successful
  */
 export async function getAuthenticatedUserDossier(
   supabase: any,
@@ -16,9 +12,6 @@ export async function getAuthenticatedUserDossier(
   accessType?: string
 ): Promise<StandardResponse> {
   try {
-    console.log("getAuthenticatedUserDossier called with:", { userId, accessType });
-    
-    // Get user profile
     const profileData = await fetchUserProfile(supabase, userId);
     if (!profileData) {
       console.error("Error fetching profile for user:", userId);
@@ -28,9 +21,6 @@ export async function getAuthenticatedUserDossier(
       };
     }
     
-    console.log("User profile retrieved:", profileData);
-    
-    // Get user's documents
     const { data: documents, error: docsError } = await supabase
       .from('pdf_documents')
       .select('*')
@@ -41,12 +31,10 @@ export async function getAuthenticatedUserDossier(
       console.error("Error fetching documents:", docsError);
     }
     
-    // Determine access type
     const accessTypeInfo = accessType ? 
       determineAccessType(accessType) : 
       { isDirectivesOnly: false, isMedicalOnly: false };
     
-    // Create dossier
     const dossier = {
       id: `auth-${Date.now()}`,
       userId: userId,
@@ -63,8 +51,6 @@ export async function getAuthenticatedUserDossier(
         }
       }
     };
-    
-    console.log("Created dossier for authenticated user:", JSON.stringify(dossier, null, 2));
     
     return {
       success: true,

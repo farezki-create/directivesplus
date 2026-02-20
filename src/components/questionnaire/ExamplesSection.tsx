@@ -82,7 +82,6 @@ const ExamplesSection = () => {
         // If there's an error, we use our predefined examples
         createExamplesFromPredefined();
       } else if (data && data.length > 0) {
-        console.log("Example phrases data:", data);
         setExamples(data);
         
         // Extract unique categories

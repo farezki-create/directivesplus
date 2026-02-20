@@ -32,7 +32,6 @@ export const useOptimizedQuery = <T>(
     if (enableMemoryCache) {
       const cachedData = cacheManager.get(cacheKey);
       if (cachedData) {
-        console.log(`Cache hit for ${cacheKey}`);
         return cachedData;
       }
     }
@@ -41,9 +40,6 @@ export const useOptimizedQuery = <T>(
     const startTime = performance.now();
     const result = await queryFn();
     const endTime = performance.now();
-    
-    // Logger les performances
-    console.log(`Query ${cacheKey} took ${endTime - startTime}ms`);
     
     // Mettre en cache si activé
     if (enableMemoryCache && result) {

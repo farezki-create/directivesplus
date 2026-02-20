@@ -14,7 +14,6 @@ export const useDirectivesAccessState = () => {
     if (directAccessCode && documentData && documents.length > 0) {
       try {
         const parsedDocuments = JSON.parse(documentData);
-        console.log("Document ajouté depuis le dossier partagé:", parsedDocuments);
         
         addDocument(parsedDocuments);
         

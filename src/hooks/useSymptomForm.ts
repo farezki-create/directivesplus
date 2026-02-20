@@ -57,11 +57,8 @@ export const useSymptomForm = () => {
     }
 
     setSaving(true);
-    console.log("💾 Début de l'enregistrement des symptômes pour l'utilisateur:", user.id);
-    console.log("📊 Symptômes à enregistrer:", symptoms);
 
     try {
-      // Enregistrer les symptômes - les valeurs décimales sont maintenant supportées
       const symptomData = {
         patient_id: user.id,
         douleur: Number(symptoms.douleur),
@@ -73,14 +70,12 @@ export const useSymptomForm = () => {
         auteur: user.email || "patient"
       };
 
-      console.log("📝 Données à insérer:", symptomData);
-
       const { error } = await supabase
         .from("symptom_tracking")
         .insert(symptomData);
 
       if (error) {
-        console.error("❌ Erreur Supabase lors de l'enregistrement:", error);
+        console.error("Erreur Supabase lors de l'enregistrement:", error);
         toast({
           title: "Erreur de base de données",
           description: `Erreur: ${error.message}`,
@@ -89,8 +84,6 @@ export const useSymptomForm = () => {
         return;
       }
 
-      console.log("✅ Symptômes enregistrés avec succès");
-
       toast({
         title: "Symptômes enregistrés",
         description: "Vos symptômes ont été sauvegardés avec succès"
@@ -98,8 +91,6 @@ export const useSymptomForm = () => {
 
       // Vérifier et déclencher les alertes APRÈS l'enregistrement réussi
       try {
-        console.log("🔔 Vérification des alertes automatiques...");
-        
         const alertResult = await checkAndTriggerAlert(
           symptoms.douleur, 
           symptoms.dyspnee, 
@@ -108,14 +99,11 @@ export const useSymptomForm = () => {
           symptoms.sommeil
         );
 
-        console.log("📋 Résultat de l'alerte:", alertResult);
-
         if (alertResult && alertResult.redirectToAlerts) {
           showAlertDialog(alertResult.criticalSymptoms);
         }
       } catch (alertError) {
-        console.error("⚠️ Erreur lors de la vérification des alertes:", alertError);
-        // Ne pas faire échouer l'enregistrement si les alertes échouent
+        console.error("Erreur lors de la vérification des alertes:", alertError);
         toast({
           title: "Alerte non envoyée",
           description: "Les symptômes sont enregistrés mais l'alerte n'a pas pu être envoyée",
@@ -126,7 +114,7 @@ export const useSymptomForm = () => {
       resetForm();
 
     } catch (err) {
-      console.error("💥 Erreur générale:", err);
+      console.error("Erreur générale:", err);
       toast({
         title: "Erreur",
         description: "Une erreur inattendue s'est produite lors de l'enregistrement",

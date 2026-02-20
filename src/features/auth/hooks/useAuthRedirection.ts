@@ -12,7 +12,6 @@ export const useAuthRedirection = (accessToken?: string) => {
   // Redirection si déjà authentifié
   useEffect(() => {
     if (!isLoading && isAuthenticated && !redirectInProgress && !accessToken) {
-      console.log("🔄 Utilisateur déjà authentifié, redirection...");
       const from = location.state?.from || "/rediger";
       navigate(from, { replace: true });
     }
