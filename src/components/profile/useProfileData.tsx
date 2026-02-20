@@ -23,7 +23,6 @@ export function useProfileData(): UseProfileDataReturn {
 
   // Check authentication and redirect if needed
   if (!user || !user.id) {
-    console.log("No user found in context, redirecting to auth");
     toast.error("Session expirée", {
       description: "Veuillez vous reconnecter",
     });

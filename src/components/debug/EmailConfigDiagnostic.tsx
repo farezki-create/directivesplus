@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,6 @@ const EmailConfigDiagnostic = () => {
     const results: any[] = [];
 
     try {
-      // Test 1: Vérifier la configuration Supabase
-      console.log("🔍 Test 1: Configuration Supabase");
       const supabaseUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co";
       const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc";
       
@@ -30,8 +27,6 @@ const EmailConfigDiagnostic = () => {
         success: true
       });
 
-      // Test 2: Vérifier la session Auth
-      console.log("🔍 Test 2: Session Auth");
       const { data: session, error: sessionError } = await supabase.auth.getSession();
       results.push({
         test: "Session Auth",
@@ -40,11 +35,7 @@ const EmailConfigDiagnostic = () => {
         success: !sessionError
       });
 
-      // Test 3: Test d'inscription avec email de test
       if (testEmail) {
-        console.log("🔍 Test 3: Test inscription");
-        
-        // D'abord, nettoyer toute session existante
         await supabase.auth.signOut({ scope: 'global' });
         
         const { data, error } = await supabase.auth.signUp({
@@ -54,8 +45,6 @@ const EmailConfigDiagnostic = () => {
             emailRedirectTo: `${window.location.origin}/auth`
           }
         });
-
-        console.log("Résultat inscription:", { data, error });
 
         if (error) {
           results.push({
@@ -80,10 +69,7 @@ const EmailConfigDiagnostic = () => {
         }
       }
 
-      // Test 4: Vérifier les paramètres Auth via l'API
-      console.log("🔍 Test 4: Paramètres Auth");
       try {
-        // Test d'appel à l'API Auth settings (si accessible)
         const settingsResponse = await fetch(`${supabaseUrl}/auth/v1/settings`, {
           headers: {
             'apikey': supabaseAnonKey,
@@ -117,9 +103,7 @@ const EmailConfigDiagnostic = () => {
         });
       }
 
-      // Test 5: Test de reset password pour vérifier SMTP
       if (testEmail) {
-        console.log("🔍 Test 5: Test reset password (SMTP)");
         try {
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(testEmail, {
             redirectTo: `${window.location.origin}/auth/reset-password`
@@ -179,7 +163,6 @@ const EmailConfigDiagnostic = () => {
         <CardTitle>🔧 Diagnostic Email & Auth Supabase</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Configuration actuelle */}
         <Alert>
           <AlertDescription>
             <strong>Configuration SMTP détectée :</strong><br/>
@@ -189,7 +172,6 @@ const EmailConfigDiagnostic = () => {
           </AlertDescription>
         </Alert>
 
-        {/* Formulaire de test */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
@@ -212,7 +194,6 @@ const EmailConfigDiagnostic = () => {
           </Button>
         </div>
 
-        {/* Résultats */}
         {diagnosticResults.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Résultats du diagnostic :</h3>
@@ -224,7 +205,6 @@ const EmailConfigDiagnostic = () => {
                 </div>
                 <p className="text-sm text-gray-600">{result.details}</p>
                 
-                {/* Détails supplémentaires pour certains tests */}
                 {result.rawError && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm text-red-600">
@@ -254,7 +234,6 @@ const EmailConfigDiagnostic = () => {
           </div>
         )}
 
-        {/* Instructions */}
         <Alert>
           <AlertDescription>
             <strong>Comment interpréter les résultats :</strong><br/>
@@ -264,7 +243,6 @@ const EmailConfigDiagnostic = () => {
           </AlertDescription>
         </Alert>
 
-        {/* Liens utiles */}
         <div className="text-sm space-y-1">
           <p><strong>Liens de vérification :</strong></p>
           <p>• <a href="https://supabase.com/dashboard/project/kytqqjnecezkxyhmmjrz/auth/users" target="_blank" className="text-blue-600 underline">Utilisateurs Supabase</a></p>

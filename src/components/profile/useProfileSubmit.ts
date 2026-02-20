@@ -22,26 +22,17 @@ export function useProfileSubmit({
 
   const submitProfile = async (values: ProfileFormValues) => {
     try {
-      console.log('🔄 [PROFILE-SUBMIT] Début soumission:', values);
-      
       setFormState('submitting');
       setIsLoading(true);
       
-      // Animation de progression
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
         setSubmitProgress(progress > 90 ? 90 : progress);
       }, 100);
       
-      // Formatage de la date de naissance pour la base de données
       const formattedBirthDate = values.birthDate ? 
         values.birthDate.toISOString().split('T')[0] : null;
-
-      console.log('📝 [PROFILE-SUBMIT] Données formatées:', {
-        ...values,
-        birthDate: formattedBirthDate
-      });
 
       const { error } = await supabase
         .from("profiles")
@@ -61,7 +52,7 @@ export function useProfileSubmit({
       setSubmitProgress(100);
       
       if (error) {
-        console.error('❌ [PROFILE-SUBMIT] Erreur Supabase:', error);
+        console.error('Erreur Supabase:', error);
         setFormState('error');
         toast.error("Erreur lors de la mise à jour du profil", {
           description: error.message,
@@ -72,7 +63,6 @@ export function useProfileSubmit({
       setFormState('success');
       toast.success("Profil mis à jour avec succès");
       
-      // Mettre à jour l'état parent
       onProfileUpdate({
         first_name: values.firstName,
         last_name: values.lastName,
@@ -84,13 +74,10 @@ export function useProfileSubmit({
         country: values.country,
       });
       
-      console.log('✅ [PROFILE-SUBMIT] Mise à jour réussie');
-      
-      // Redirection immédiate vers l'accueil après succès
       navigate('/', { replace: true });
       
     } catch (error: any) {
-      console.error('❌ [PROFILE-SUBMIT] Erreur inattendue:', error);
+      console.error('Erreur inattendue:', error);
       setFormState('error');
       toast.error("Une erreur est survenue", {
         description: error.message || "Veuillez réessayer plus tard",

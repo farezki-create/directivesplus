@@ -21,18 +21,6 @@ const AccessCard = ({
   isGenerating = false,
   isQrCodeValid = false
 }: AccessCardProps) => {
-  console.log("AccessCard - Rendering with enhanced props:", {
-    firstName,
-    lastName,
-    birthDate,
-    codeAcces,
-    qrCodeUrl: qrCodeUrl?.substring(0, 100) + (qrCodeUrl?.length > 100 ? '...' : ''),
-    qrCodeUrlLength: qrCodeUrl?.length || 0,
-    isGenerating,
-    isQrCodeValid
-  });
-
-  // Valeurs par défaut si le profil n'est pas complet
   const displayFirstName = firstName || "Utilisateur";
   const displayLastName = lastName || "DirectivesPlus";
   const displayBirthDate = birthDate || "À compléter";
@@ -40,7 +28,6 @@ const AccessCard = ({
 
   const handleQrCodeClick = () => {
     if (isQrCodeValid && !isGenerating) {
-      console.log("AccessCard - Opening URL:", qrCodeUrl);
       try {
         window.open(qrCodeUrl, '_blank');
       } catch (error) {
@@ -50,13 +37,11 @@ const AccessCard = ({
   };
 
   const handleRefreshQrCode = () => {
-    console.log("AccessCard - Refreshing page to regenerate QR code");
     window.location.reload();
   };
 
   return (
     <div className="space-y-4">
-      {/* Alerte si profil incomplet */}
       {isProfileIncomplete && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center gap-2 text-yellow-800">
@@ -74,18 +59,15 @@ const AccessCard = ({
         className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden" 
         style={{ aspectRatio: '85.6/53.98' }}
       >
-        {/* Pattern décoratif */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
         
-        {/* Header avec logo en haut */}
         <div className="flex items-center gap-2 mb-2">
           <CreditCard className="h-4 w-4" />
           <span className="text-xs font-bold">DirectivesPlus</span>
           <span className="text-xs opacity-90 ml-2">Carte d'Accès aux Directives</span>
         </div>
         
-        {/* Section des coordonnées patient */}
         <div className="mt-1 mb-10">
           <div className="bg-white bg-opacity-15 rounded-lg p-3">
             <div className="text-xs opacity-90 mb-2 tracking-wide uppercase font-medium">PATIENT</div>
@@ -139,7 +121,6 @@ const AccessCard = ({
           </div>
         </div>
 
-        {/* Code d'accès */}
         <div className="absolute bottom-4 left-6 right-6">
           <div className="bg-white bg-opacity-15 rounded-lg p-3">
             <div className="flex justify-between items-center">

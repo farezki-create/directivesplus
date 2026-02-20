@@ -21,7 +21,6 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
   
   // Make sure the handler is stable with useCallback
   const handleChange = useCallback((value: string) => {
-    console.log(`QuestionItem: Selecting response for question ${question.id}: "${value}"`);
     onResponseChange(question.id, value);
   }, [question.id, onResponseChange]);
   

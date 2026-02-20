@@ -30,7 +30,6 @@ export const usePdfViewerState = () => {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Memoize search params to prevent unnecessary re-renders
   const searchParamsData = useMemo(() => ({
     documentId: searchParams.get('id'),
     documentType: searchParams.get('type') || 'pdf',
@@ -39,14 +38,6 @@ export const usePdfViewerState = () => {
   }), [searchParams]);
 
   const { documentId, documentType, accessType, userId } = searchParamsData;
-
-  console.log("PdfViewerState - Init with params:", {
-    documentId,
-    documentType,
-    accessType,
-    userId,
-    isExternalBrowser
-  });
 
   const loadDocument = useCallback(async () => {
     if (!documentId) {
@@ -58,17 +49,10 @@ export const usePdfViewerState = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log("PdfViewerState - Loading document:", {
-        documentId,
-        documentType,
-        accessType
-      });
 
       let documentData = null;
 
       if (documentType === 'directive') {
-        // Charger une directive
         const { data, error } = await supabase
           .from('directives')
           .select('*')
@@ -90,7 +74,6 @@ export const usePdfViewerState = () => {
           };
         }
       } else {
-        // Charger un document PDF
         const { data, error } = await supabase
           .from('pdf_documents')
           .select('*')
@@ -112,10 +95,9 @@ export const usePdfViewerState = () => {
       }
 
       setDocument(documentData);
-      console.log("PdfViewerState - Document loaded:", documentData);
       
     } catch (err: any) {
-      console.error("PdfViewerState - Error loading document:", err);
+      console.error("Error loading document:", err);
       setError(err.message || "Erreur lors du chargement du document");
       
       if (retryCount < 2) {

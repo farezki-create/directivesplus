@@ -23,7 +23,6 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
 
   const handleOpenInternalViewer = () => {
     if (firstPdfDocument?.id) {
-      console.log("Ouverture dans le viewer interne:", firstPdfDocument);
       window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
     }
   };

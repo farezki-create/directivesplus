@@ -43,7 +43,7 @@ const EnhancedLoginForm = () => {
       const responseTime = Date.now() - startTime;
       recordSuccess(responseTime);
       
-      console.log('Login successful');
+      // Login successful
     } catch (error) {
       console.error('Login failed:', error);
       recordError();

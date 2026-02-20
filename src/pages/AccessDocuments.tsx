@@ -11,9 +11,7 @@ const AccessDocuments = () => {
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      console.log("Utilisateur connecté dans AccessDocuments:", user.id);
-    }
+    // Auth state tracked
   }, [isAuthenticated, user]);
 
   return (

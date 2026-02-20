@@ -28,6 +28,5 @@ export const useUrlAccessParams = (): UrlAccessParams => {
     };
   }, [searchParams]);
   
-  console.log("URL params extracted:", params);
   return params;
 };

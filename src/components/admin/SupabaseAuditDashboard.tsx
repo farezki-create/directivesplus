@@ -46,33 +46,21 @@ const SupabaseAuditDashboard = () => {
     const results: AuditResult[] = [];
 
     try {
-      // 1. Audit des tables et RLS
-      console.log("🔍 Audit des politiques RLS...");
       const rlsAudit = await auditRLSPolicies();
       results.push(...rlsAudit);
 
-      // 2. Audit des utilisateurs
-      console.log("🔍 Audit des utilisateurs...");
       const usersAudit = await auditUsers();
       results.push(...usersAudit);
 
-      // 3. Audit de la sécurité
-      console.log("🔍 Audit de sécurité...");
       const securityAudit = await auditSecurity();
       results.push(...securityAudit);
 
-      // 4. Audit des performances
-      console.log("🔍 Audit des performances...");
       const performanceAudit = await auditPerformance();
       results.push(...performanceAudit);
 
-      // 5. Audit de la configuration
-      console.log("🔍 Audit de la configuration...");
       const configAudit = await auditConfiguration();
       results.push(...configAudit);
 
-      // 6. Métriques système
-      console.log("📊 Collecte des métriques...");
       const metrics = await collectSystemMetrics();
       setSystemMetrics(metrics);
 

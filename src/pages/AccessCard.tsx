@@ -20,10 +20,7 @@ const AccessCardPage = () => {
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   
   useEffect(() => {
-    console.log("AccessCardPage - Auth state:", { 
-      userId: user?.id, 
-      hasProfile: !!profile
-    });
+    // Auth state tracked for access card
   }, [user, profile]);
   
   useEffect(() => {

@@ -29,14 +29,11 @@ interface DirectivesDisplayProps {
 }
 
 export const DirectivesDisplay: React.FC<DirectivesDisplayProps> = ({ documents }) => {
-  console.log("DirectivesDisplay - Received documents:", documents);
-
   if (documents.length === 0) {
     return null;
   }
 
   const handleDownload = (filePath: string, fileName: string) => {
-    console.log("Downloading document:", { filePath, fileName });
     const link = document.createElement('a');
     link.href = filePath;
     link.download = fileName;
@@ -47,24 +44,19 @@ export const DirectivesDisplay: React.FC<DirectivesDisplayProps> = ({ documents 
   };
 
   const handleView = (filePath: string) => {
-    console.log("Viewing document:", filePath);
     window.open(filePath, '_blank');
   };
 
   const formatFileSize = (filePath: string) => {
-    // Essayer d'extraire la taille depuis le chemin ou retourner une valeur par défaut
     return "PDF";
   };
 
-  // Extraire tous les documents de tous les records
   const allDocuments = documents.reduce((acc, record) => {
     if (record.content?.documents) {
       return [...acc, ...record.content.documents];
     }
     return acc;
   }, [] as DirectiveDocument[]);
-
-  console.log("All extracted documents:", allDocuments);
 
   return (
     <div className="mt-6 space-y-4">
