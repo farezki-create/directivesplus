@@ -6,10 +6,7 @@ import StrictRLSAuditDashboard from '@/components/admin/StrictRLSAuditDashboard'
 import Header from '@/components/Header';
 
 const AdminStrictRLS = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  
-  // Check if user is admin
-  const isAdmin = isAuthenticated && user?.email?.endsWith('@directivesplus.fr');
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
   if (isLoading) {
     return (

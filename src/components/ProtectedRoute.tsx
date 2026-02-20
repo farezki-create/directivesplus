@@ -10,17 +10,8 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const location = useLocation();
-
-  console.log('🛡️ [PROTECTED-ROUTE] Vérification accès:', {
-    pathname: location.pathname,
-    isAuthenticated,
-    isLoading,
-    requireAuth,
-    requireAdmin,
-    userEmail: user?.email
-  });
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -36,20 +27,11 @@ const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: 
 
   // Check admin access if required
   if (requireAdmin) {
-    const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
-    
-    console.log('🔐 [PROTECTED-ROUTE] Vérification admin:', {
-      userEmail: user?.email,
-      isAdmin,
-      isAuthenticated
-    });
-    
     if (!isAuthenticated) {
       return <Navigate to="/auth" state={{ from: location }} replace />;
     }
     
     if (!isAdmin) {
-      console.log('❌ [PROTECTED-ROUTE] Accès admin refusé');
       return <Navigate to="/" replace />;
     }
   }
@@ -98,12 +80,6 @@ const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: 
       location.pathname.includes('/direct-document/');
     
     if (hasValidSharedParams) {
-      // Log the shared access attempt for security monitoring
-      console.log('Shared access attempt:', {
-        path: location.pathname,
-        search: location.search,
-        timestamp: new Date().toISOString()
-      });
       return <>{children}</>;
     }
     
@@ -113,7 +89,6 @@ const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: 
 
   // For protected routes, require authentication
   if (requireAuth && !isAuthenticated) {
-    // Store the attempted URL for redirect after login
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
@@ -122,7 +97,6 @@ const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: 
     return <Navigate to="/profile" replace />;
   }
 
-  console.log('✅ [PROTECTED-ROUTE] Accès autorisé');
   return <>{children}</>;
 };
 

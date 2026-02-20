@@ -11,11 +11,14 @@ export class StrictRLSManager {
   static async isCurrentUserAdmin(): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) return false;
+      if (!user?.id) return false;
       
-      const isAdmin = user.email.endsWith('@directivesplus.fr');
+      const { data } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
       
-      return isAdmin;
+      return !!data;
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;

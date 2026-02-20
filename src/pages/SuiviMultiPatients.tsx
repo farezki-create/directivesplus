@@ -29,8 +29,8 @@ const SuiviMultiPatients = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Vérifier si l'utilisateur est un soignant
-  const isSoignant = user?.email?.endsWith('@directivesplus.fr');
+  // Vérifier si l'utilisateur est un soignant (via rôle admin)
+  const { isAdmin: isSoignant } = useAuth();
 
   useEffect(() => {
     if (isSoignant) {

@@ -6,10 +6,7 @@ import AdminMainDashboard from "@/components/admin/AdminMainDashboard";
 import BackButton from '@/components/ui/back-button';
 
 const AdminMainDashboardPage = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  
-  // Check if user is admin based on email domain
-  const isAdmin = isAuthenticated && user?.email?.endsWith('@directivesplus.fr');
+  const { isLoading, isAdmin } = useAuth();
 
   if (isLoading) {
     return (

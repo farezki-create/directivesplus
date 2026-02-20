@@ -4,10 +4,7 @@ import { Heart, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Footer = () => {
-  const { user } = useAuth();
-  
-  // Vérifier si l'utilisateur est admin
-  const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
+  const { isAdmin } = useAuth();
 
   return (
     <footer className="bg-directiveplus-800 text-white py-12">

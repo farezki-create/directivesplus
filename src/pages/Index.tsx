@@ -23,15 +23,12 @@ const Index = () => {
   const [mounted, setMounted] = useState(false);
   const [auditInProgress, setAuditInProgress] = useState(false);
   const [auditResults, setAuditResults] = useState<any>(null);
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Vérifier si l'utilisateur est admin
-  const isAdmin = isAuthenticated && user?.email?.endsWith('@directivesplus.fr');
 
   const handleAdminAccess = () => {
     navigate('/admin');

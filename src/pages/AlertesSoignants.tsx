@@ -17,8 +17,8 @@ const AlertesSoignants = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Vérifier si l'utilisateur est un soignant (email @directivesplus.fr)
-  const isSoignant = user?.email?.endsWith('@directivesplus.fr');
+  // Vérifier si l'utilisateur est un soignant (via rôle admin)
+  const { isAdmin: isSoignant } = useAuth();
 
   if (isLoading) {
     return (

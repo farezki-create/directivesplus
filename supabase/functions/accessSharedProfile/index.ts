@@ -3,9 +3,35 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders } from "../_shared/cors.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+// Input validation schema
+const accessSchema = z.object({
+  firstName: z.string()
+    .trim()
+    .min(1, 'Prénom requis')
+    .max(100, 'Prénom trop long')
+    .regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'Caractères invalides dans le prénom'),
+  lastName: z.string()
+    .trim()
+    .min(1, 'Nom requis')
+    .max(100, 'Nom trop long')
+    .regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'Caractères invalides dans le nom'),
+  birthdate: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format de date invalide (YYYY-MM-DD)')
+    .refine((date) => {
+      const d = new Date(date);
+      const now = new Date();
+      const min = new Date('1900-01-01');
+      return d >= min && d <= now && !isNaN(d.getTime());
+    }, 'Date de naissance invalide'),
+  accessCode: z.string()
+    .trim()
+    .regex(/^[A-Z0-9]{8,12}$/, 'Format de code d\'accès invalide')
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -17,16 +43,24 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body
+    // Limit request body size
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > 10000) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Requête trop volumineuse" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Parse and validate request body
     const body = await req.json();
-    const { firstName, lastName, birthdate, accessCode } = body;
+    const validation = accessSchema.safeParse(body);
     
-    // Validate inputs
-    if (!firstName || !lastName || !birthdate || !accessCode) {
+    if (!validation.success) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Tous les champs sont requis",
+          error: validation.error.errors[0]?.message || "Données invalides",
         }),
         {
           status: 400,
@@ -34,6 +68,8 @@ serve(async (req) => {
         }
       );
     }
+
+    const { firstName, lastName, birthdate, accessCode } = validation.data;
 
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

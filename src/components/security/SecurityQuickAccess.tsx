@@ -8,10 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const SecurityQuickAccess = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-
-  // Vérifier si l'utilisateur est admin
-  const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
+  const { isAuthenticated, isAdmin } = useAuth();
 
   if (!isAuthenticated || !isAdmin) {
     return null;

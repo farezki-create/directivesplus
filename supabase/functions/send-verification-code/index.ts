@@ -86,8 +86,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Code de vérification envoyé',
-        code: codeData // À supprimer en production pour la sécurité
+        message: 'Code de vérification envoyé'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
