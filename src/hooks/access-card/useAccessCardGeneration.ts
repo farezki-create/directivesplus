@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicAppUrl } from "@/utils/getPublicAppUrl";
 
 export const useAccessCardGeneration = () => {
   const { user, profile } = useAuth();
@@ -19,6 +20,7 @@ export const useAccessCardGeneration = () => {
 
   const generateQRCodeForDirectives = async (userId: string, accessCode: string) => {
     setIsGenerating(true);
+    const baseUrl = getPublicAppUrl();
     try {
       // 1. Rechercher le document PDF le plus récent
       const { data: pdfDocs, error: pdfError } = await supabase
@@ -35,9 +37,9 @@ export const useAccessCardGeneration = () => {
         if (document.file_path.startsWith('http')) {
           finalUrl = document.file_path;
         } else if (document.file_path.startsWith('data:')) {
-          finalUrl = `${window.location.origin}/pdf-viewer/${document.id}`;
+          finalUrl = `${baseUrl}/pdf-viewer/${document.id}`;
         } else {
-          finalUrl = `${window.location.origin}/pdf-viewer/${document.id}`;
+          finalUrl = `${baseUrl}/pdf-viewer/${document.id}`;
         }
         
         setQrCodeUrl(finalUrl);
@@ -56,19 +58,19 @@ export const useAccessCardGeneration = () => {
 
       if (!directivesError && directives && directives.length > 0) {
         const directive = directives[0];
-        const directiveUrl = `${window.location.origin}/pdf-viewer/${directive.id}?type=directive`;
+        const directiveUrl = `${baseUrl}/pdf-viewer/${directive.id}?type=directive`;
         setQrCodeUrl(directiveUrl);
         setIsGenerating(false);
         return;
       }
 
       // 3. Fallback amélioré
-      const fallbackUrl = `${window.location.origin}/mes-directives?access=emergency&code=${accessCode}`;
+      const fallbackUrl = `${baseUrl}/mes-directives?access=emergency&code=${accessCode}`;
       setQrCodeUrl(fallbackUrl);
       
     } catch (error) {
       console.error("AccessCardGeneration - Error during generation:", error);
-      const errorFallbackUrl = `${window.location.origin}/directives-access?emergency=true&user=${userId.substring(0, 8)}`;
+      const errorFallbackUrl = `${baseUrl}/directives-access?emergency=true&user=${userId.substring(0, 8)}`;
       setQrCodeUrl(errorFallbackUrl);
     } finally {
       setIsGenerating(false);

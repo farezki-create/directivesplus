@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
+import { getPublicAppUrl } from "@/utils/getPublicAppUrl";
 
 interface QRCodeData {
   documentId: string;
@@ -48,7 +49,7 @@ export const useQRCodeGeneration = () => {
       if (filePath && filePath.startsWith('http')) {
         qrCodeUrl = filePath;
       } else {
-        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+        qrCodeUrl = `${getPublicAppUrl()}/pdf-viewer?id=${documentId}`;
       }
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
