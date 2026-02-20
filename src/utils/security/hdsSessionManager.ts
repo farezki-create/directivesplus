@@ -25,7 +25,7 @@ export class HDSSessionManager {
     this.startSessionExpirationWarning();
     this.setupActivityListeners();
     
-    console.log("🏥 Session HDS initialisée - Timeout: 8h, Auto-lock: 30min");
+    
   }
   
   /**

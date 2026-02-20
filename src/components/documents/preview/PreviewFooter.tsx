@@ -19,21 +19,18 @@ const PreviewFooter = ({
   onPrint,
   showPrint = true
 }: PreviewFooterProps) => {
-  console.log("PreviewFooter - rendu avec filePath:", filePath);
   const fileInfo = filePath ? detectDocumentType(filePath) : { isAudio: false };
   const isAudio = fileInfo.isAudio;
 
   const handlePrint = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("PreviewFooter - Bouton Imprimer cliqué");
     onPrint();
   };
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("PreviewFooter - Bouton Télécharger cliqué");
     onDownload();
   };
 
@@ -63,10 +60,7 @@ const PreviewFooter = ({
         )}
       </div>
       <Button 
-        onClick={() => {
-          console.log("PreviewFooter - Bouton Fermer cliqué");
-          onOpenChange(false);
-        }} 
+        onClick={() => onOpenChange(false)} 
         variant="outline"
       >
         <X className="h-4 w-4 mr-2" />

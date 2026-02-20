@@ -6,8 +6,6 @@ import { toast } from "@/hooks/use-toast";
  */
 export const handleDossierDownload = (filePath: string, fileName: string) => {
   try {
-    console.log("handleDossierDownload:", filePath, fileName);
-    
     const link = document.createElement('a');
     link.href = filePath;
     link.download = fileName;
@@ -34,8 +32,6 @@ export const handleDossierDownload = (filePath: string, fileName: string) => {
  * Handles document printing for dossier documents
  */
 export const handleDossierPrint = (filePath: string, fileType?: string) => {
-  console.log("handleDossierPrint:", filePath, fileType);
-  
   const printWindow = window.open(filePath, '_blank');
   if (printWindow) {
     printWindow.onload = () => {
@@ -54,7 +50,6 @@ export const handleDossierPrint = (filePath: string, fileType?: string) => {
  * Handles document viewing for dossier documents
  */
 export const handleDossierView = (filePath: string, fileType?: string) => {
-  console.log("handleDossierView:", filePath, fileType);
   window.open(filePath, '_blank');
 };
 
@@ -62,7 +57,6 @@ export const handleDossierView = (filePath: string, fileType?: string) => {
  * Handles upload completion (disabled for dossier mode)
  */
 export const handleDossierUploadComplete = () => {
-  console.log("Upload non disponible pour les dossiers institution");
   toast({
     title: "Information",
     description: "L'ajout de documents n'est pas disponible en mode consultation",
@@ -74,7 +68,6 @@ export const handleDossierUploadComplete = () => {
  * Handles document deletion (disabled for dossier mode)
  */
 export const handleDossierDelete = async (documentId: string) => {
-  console.log("Suppression non disponible pour les dossiers institution");
   toast({
     title: "Information",
     description: "La suppression de documents n'est pas disponible en mode consultation",

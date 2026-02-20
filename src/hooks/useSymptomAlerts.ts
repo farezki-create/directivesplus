@@ -44,7 +44,7 @@ export const useSymptomAlerts = () => {
         return false;
       }
 
-      console.log("Alerte créée avec succès pour symptômes critiques");
+      
       return true;
     } catch (err) {
       console.error("Erreur:", err);

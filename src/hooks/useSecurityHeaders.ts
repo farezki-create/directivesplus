@@ -27,7 +27,6 @@ export const useSecurityHeaders = () => {
       };
     }
     
-    // Log that security headers should be applied at server level
-    console.log('Security headers configuration:', securityHeaders);
+    // Security headers should be applied at server level
   }, []);
 };

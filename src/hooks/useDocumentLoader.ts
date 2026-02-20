@@ -17,26 +17,14 @@ export const useDocumentLoader = (documentId: string | null) => {
       return;
     }
 
-    console.log(`🔍 useDocumentLoader: TENTATIVE ${attempt + 1} pour document ${id}`);
-    
     try {
       setLoading(true);
       setError(null);
 
-      // MÉTHODE PRINCIPALE: Fonction RPC publique (maintenant avec RLS corrigé)
-      console.log("🔍 Utilisation de la fonction RPC get_public_document");
       const { data: rpcDoc, error: rpcError } = await supabase
         .rpc('get_public_document', { doc_id: id });
 
-      console.log("📊 Résultat RPC:", { 
-        success: !rpcError,
-        dataFound: rpcDoc?.length > 0,
-        error: rpcError?.message,
-        data: rpcDoc?.[0]
-      });
-
       if (rpcDoc && rpcDoc.length > 0 && !rpcError) {
-        console.log("✅ SUCCESS RPC: Document trouvé:", rpcDoc[0].file_name);
         const doc = rpcDoc[0];
         const transformedDoc: Document = {
           id: doc.id,
@@ -54,13 +42,10 @@ export const useDocumentLoader = (documentId: string | null) => {
         
         setDocument(transformedDoc);
         setLoading(false);
-        console.log("✅ DOCUMENT CHARGÉ avec succès via RPC");
         return;
       }
 
-      // MÉTHODE FALLBACK: Accès direct si RPC échoue
       if (rpcError) {
-        console.log("🔍 RPC a échoué, tentative d'accès direct");
         const { data: directDoc, error: directError } = await supabase
           .from('pdf_documents')
           .select('*')
@@ -68,7 +53,6 @@ export const useDocumentLoader = (documentId: string | null) => {
           .maybeSingle();
 
         if (directDoc && !directError) {
-          console.log("✅ SUCCESS DIRECT: Document trouvé:", directDoc.file_name);
           const transformedDoc: Document = {
             ...directDoc,
             file_type: directDoc.content_type?.split('/')[1] || 'pdf',
@@ -76,12 +60,10 @@ export const useDocumentLoader = (documentId: string | null) => {
           };
           setDocument(transformedDoc);
           setLoading(false);
-          console.log("✅ DOCUMENT CHARGÉ avec succès via accès direct");
           return;
         }
       }
 
-      // ÉCHEC: Aucune méthode n'a fonctionné
       const finalError = `Document ${id} introuvable`;
       console.error("❌ ÉCHEC COMPLET:", finalError);
       throw new Error(finalError);
@@ -90,10 +72,8 @@ export const useDocumentLoader = (documentId: string | null) => {
       const errorMessage = err instanceof Error ? err.message : "Erreur inconnue";
       console.error(`❌ useDocumentLoader: ERREUR tentative ${attempt + 1}:`, errorMessage);
       
-      // Retry automatique jusqu'à 2 tentatives
       if (attempt < 2) {
         const retryDelay = 1000 * (attempt + 1);
-        console.log(`🔄 RETRY automatique dans ${retryDelay}ms...`);
         setTimeout(() => {
           setRetryCount(attempt + 1);
           loadDocument(id, attempt + 1);
@@ -111,11 +91,9 @@ export const useDocumentLoader = (documentId: string | null) => {
 
   useEffect(() => {
     if (documentId) {
-      console.log("🚀 useDocumentLoader: DÉMARRAGE pour:", documentId);
       setRetryCount(0);
       loadDocument(documentId);
     } else {
-      console.log("⚠️ useDocumentLoader: Aucun document ID fourni");
       setDocument(null);
       setLoading(false);
       setError(null);
@@ -125,7 +103,6 @@ export const useDocumentLoader = (documentId: string | null) => {
   const retryLoad = () => {
     if (documentId && retryCount < 3) {
       const newRetryCount = retryCount + 1;
-      console.log(`🔄 useDocumentLoader: RETRY MANUEL ${newRetryCount}/3`);
       setRetryCount(newRetryCount);
       loadDocument(documentId, newRetryCount);
     }

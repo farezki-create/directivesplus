@@ -16,7 +16,7 @@ export const useEmailAudit = () => {
   const runCompleteAudit = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Début de l\'audit complet email Supabase...');
+      // Audit complet email Supabase
       
       // 1. Test configuration client
       const clientConfig = await auditClientConfig();

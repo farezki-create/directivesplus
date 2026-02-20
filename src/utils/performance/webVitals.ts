@@ -93,7 +93,7 @@ class WebVitalsMonitor {
       }
     };
     
-    console.log('Performance Report:', report);
+    
     return report;
   }
 }

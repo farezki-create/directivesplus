@@ -42,7 +42,7 @@ export const ComprehensiveAuthAudit = () => {
   const runCompleteAudit = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Début de l\'audit complet d\'authentification...');
+      // Audit complet d'authentification
       
       const configurationAudit = await auditConfiguration();
       const securityAudit = await auditSecurity();

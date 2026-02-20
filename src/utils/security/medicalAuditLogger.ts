@@ -59,13 +59,6 @@ export class MedicalAuditLogger {
    */
   static async logMedicalAccess(data: MedicalAuditLogData): Promise<string | null> {
     try {
-      console.log("🏥 Logging medical access:", {
-        context: data.medicalContext,
-        type: data.accessType,
-        action: data.actionPerformed,
-        resourceType: data.resourceType,
-        hdsLevel: data.hdsComplianceLevel
-      });
 
       // Générer une référence d'audit unique
       const auditReference = `HDS-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
@@ -108,7 +101,7 @@ export class MedicalAuditLogger {
         await this.logCriticalAccess(data, auditReference);
       }
 
-      console.log("✅ Medical access logged successfully:", auditReference);
+      
       return auditReference;
 
     } catch (error) {
@@ -218,7 +211,7 @@ export class MedicalAuditLogger {
         p_risk_level: 'low'
       });
 
-      console.log(`📊 Consultation session ended: ${auditReference}, duration: ${duration}s`);
+      
     } catch (error) {
       console.error("❌ Failed to end consultation session:", error);
     }

@@ -62,7 +62,7 @@ export class SecurityAuditor {
    * Lance un audit complet de sécurité
    */
   async runCompleteAudit(): Promise<SecurityAuditReport> {
-    console.log("🔍 Démarrage de l'audit de sécurité complet...");
+    
 
     // Exécuter tous les audits par catégorie
     const audits = await Promise.all([
@@ -81,7 +81,7 @@ export class SecurityAuditor {
     this.generateRecommendations();
     this.determineComplianceStatus();
 
-    console.log("✅ Audit de sécurité terminé. Score global:", this.report.overallScore);
+    
     return this.report;
   }
 

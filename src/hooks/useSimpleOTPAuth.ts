@@ -21,12 +21,8 @@ export const useSimpleOTPAuth = () => {
     setLoading(true);
     
     try {
-      console.log('🔄 Tentative d\'envoi OTP pour:', userEmail);
-      
-      // Nettoyer d'abord toute session existante
       await supabase.auth.signOut({ scope: 'global' });
       
-      // Utiliser signInWithOtp avec des options plus permissives
       const { data, error } = await supabase.auth.signInWithOtp({
         email: userEmail.trim(),
         options: {
@@ -35,12 +31,9 @@ export const useSimpleOTPAuth = () => {
         }
       });
 
-      console.log('📧 Réponse Supabase OTP:', { data, error });
-
       if (error) {
         console.error('❌ Erreur Supabase OTP:', error);
         
-        // Diagnostic détaillé de l'erreur
         let errorMessage = "Impossible d'envoyer le code.";
         
         if (error.message.includes('rate limit') || error.status === 429) {
@@ -94,15 +87,11 @@ export const useSimpleOTPAuth = () => {
     setLoading(true);
 
     try {
-      console.log('🔍 Vérification OTP pour:', email);
-      
       const { data, error } = await supabase.auth.verifyOtp({
         email: email.trim(),
         token: otpCode,
         type: 'email'
       });
-
-      console.log('✅ Réponse vérification OTP:', { data, error });
 
       if (error) {
         console.error('❌ Erreur vérification OTP:', error);
@@ -115,13 +104,11 @@ export const useSimpleOTPAuth = () => {
       }
 
       if (data.user && data.session) {
-        console.log('🎉 Connexion réussie pour:', data.user.email);
         toast({
           title: "Connexion réussie !",
           description: "Redirection en cours...",
         });
         
-        // Redirection après succès
         setTimeout(() => {
           window.location.href = '/profile';
         }, 1000);

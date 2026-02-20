@@ -64,6 +64,6 @@ export const createDonationSession = async ({ amount, isRecurring }: CreateDonat
 
 // For testing without a backend
 const mockRedirect = (amount: number, isRecurring: boolean) => {
-  console.log(`MOCK: Redirecting to Stripe for ${isRecurring ? 'recurring' : 'one-time'} payment of €${amount/100}`);
+  
   alert(`Cette fonctionnalité nécessite une intégration back-end avec Stripe. En production, vous seriez redirigé vers la page de paiement Stripe pour un don ${isRecurring ? 'mensuel' : 'ponctuel'} de ${amount/100}€.`);
 };

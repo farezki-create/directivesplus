@@ -9,7 +9,6 @@ const FinancialSection = () => {
 
   const handleDonation = (amount: number, recurring: boolean = false) => {
     // Simulation - ici vous pourriez intégrer Stripe, PayPal, etc.
-    console.log(`Don de ${amount}€ ${recurring ? 'mensuel' : 'unique'}`);
   };
 
   return (

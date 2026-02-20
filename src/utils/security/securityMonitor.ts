@@ -41,7 +41,7 @@ class SecurityMonitor {
       this.checkThresholds();
     }, 30000); // Toutes les 30 secondes
 
-    console.log('🔒 Monitoring de sécurité démarré');
+    
   }
 
   /**
@@ -49,7 +49,7 @@ class SecurityMonitor {
    */
   stopMonitoring(): void {
     this.isMonitoring = false;
-    console.log('🔒 Monitoring de sécurité arrêté');
+    
   }
 
   /**
@@ -212,7 +212,7 @@ class SecurityMonitor {
     const alert = this.alerts.find(a => a.id === alertId);
     if (alert) {
       alert.resolved = true;
-      console.log('✅ Alerte résolue:', alertId);
+      
     }
   }
 
