@@ -170,8 +170,6 @@ class ConsolidatedSecurityManager {
       this.securityEvents = this.securityEvents.slice(-1000);
     }
 
-    // Log pour le développement
-    console.log(`[SECURITY] ${event.type} - ${event.success ? 'SUCCESS' : 'FAILED'} - ${event.identifier}`, event.metadata);
   }
 
   /**

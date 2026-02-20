@@ -41,13 +41,9 @@ export const SimpleRegisterForm = ({ onSuccess }: SimpleRegisterFormProps) => {
   const { register, isLoading } = useSimpleRegister();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission formulaire inscription simple");
-    
     const result = await register(values);
     
     if (result.success) {
-      console.log("✅ Inscription réussie");
-      
       form.reset();
       
       setRegistrationSuccess({

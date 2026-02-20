@@ -10,8 +10,6 @@ interface QuestionsContainerProps {
 }
 
 const QuestionsContainer = memo(({ questions, responses, onResponseChange }: QuestionsContainerProps) => {
-  console.log("Rendering QuestionsContainer with", questions?.length || 0, "questions");
-  console.log("Current responses:", responses);
   
   // Ensure questions is an array before trying to access it
   const hasQuestions = Array.isArray(questions) && questions.length > 0;

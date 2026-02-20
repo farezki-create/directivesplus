@@ -15,7 +15,7 @@ export const useHDSSessionIntegration = () => {
       HDSSessionManager.setSessionStartTime();
       HDSSessionManager.initializeHDSSession();
       
-      console.log("🏥 Session HDS activée - 8h max, auto-lock 30min");
+      
     } else {
       // Nettoyer si pas authentifié
       HDSSessionManager.destroy();
@@ -36,7 +36,7 @@ export const useHDSSessionIntegration = () => {
     const checkInterval = setInterval(() => {
       const isValid = HDSSessionManager.isSessionValid();
       if (!isValid) {
-        console.log("❌ Session HDS expirée - redirection vers l'auth");
+        
         window.location.href = '/auth';
       }
     }, 60000); // Vérifier toutes les minutes

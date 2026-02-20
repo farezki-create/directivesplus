@@ -81,33 +81,21 @@ const SecurityAuditDashboard = () => {
     const results: AuditResult[] = [];
 
     try {
-      // 1. Audit de l'authentification
-      console.log("🔍 Audit de l'authentification...");
       const authAudit = await auditAuthentication();
       results.push(authAudit);
 
-      // 2. Audit de la protection des données
-      console.log("🔍 Audit de la protection des données...");
       const dataAudit = await auditDataProtection();
       results.push(dataAudit);
 
-      // 3. Audit de la sécurité réseau
-      console.log("🔍 Audit de la sécurité réseau...");
       const networkAudit = await auditNetworkSecurity();
       results.push(networkAudit);
 
-      // 4. Audit de la base de données
-      console.log("🔍 Audit de la base de données...");
       const dbAudit = await auditDatabaseSecurity();
       results.push(dbAudit);
 
-      // 5. Audit des logs
-      console.log("🔍 Audit de la journalisation...");
       const loggingAudit = await auditLogging();
       results.push(loggingAudit);
 
-      // 6. Audit de l'infrastructure
-      console.log("🔍 Audit de l'infrastructure...");
       const infraAudit = await auditInfrastructure();
       results.push(infraAudit);
 

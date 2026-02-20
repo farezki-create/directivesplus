@@ -213,7 +213,7 @@ class AdaptiveRateLimiter {
       metrics.requestCount = 0;
       metrics.errorCount = 0;
 
-      console.log(`🔄 [ADAPTIVE-RATE-LIMIT] ${endpoint}: limit adjusted to ${metrics.currentLimit} (factor: ${newAdjustmentFactor.toFixed(2)})`);
+      
     }
   }
 

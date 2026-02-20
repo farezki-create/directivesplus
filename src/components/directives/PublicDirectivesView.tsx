@@ -41,9 +41,6 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
   // Combiner les documents du dossier avec les documents utilisateur (si authentifié)
   const allDocuments = [...dossierDocuments, ...documents];
 
-  console.log("PublicDirectivesView - Documents du dossier:", dossierDocuments);
-  console.log("PublicDirectivesView - Documents utilisateur:", documents);
-  console.log("PublicDirectivesView - Tous les documents:", allDocuments);
 
   return (
     <div className="min-h-screen flex flex-col">

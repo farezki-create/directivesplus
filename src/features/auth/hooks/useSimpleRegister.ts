@@ -12,13 +12,8 @@ export const useSimpleRegister = () => {
     setIsLoading(true);
     
     try {
-      console.log("🚀 Inscription simple avec Supabase Auth natif");
-      console.log("📧 Email:", values.email);
-      
-      // Nettoyer complètement l'état d'authentification
       await supabase.auth.signOut();
 
-      // Inscription avec confirmation email automatique
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -58,9 +53,6 @@ export const useSimpleRegister = () => {
       }
 
       if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
-        console.log("📧 Email confirmé automatiquement:", !!data.user.email_confirmed_at);
-        
         if (!data.user.email_confirmed_at) {
           toast({
             title: "Inscription réussie !",

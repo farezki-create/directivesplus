@@ -12,12 +12,10 @@ export const uploadFileToSupabase = async (
   onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void
 ) => {
   try {
-    // Préparer le nom du fichier
     const originalName = file.name;
     const extension = originalName.substring(originalName.lastIndexOf('.')) || "";
     const finalFileName = customFileName ? (customFileName + extension) : originalName;
 
-    // Convertir le fichier en data URI
     const reader = new FileReader();
     reader.readAsDataURL(file);
     
@@ -31,15 +29,11 @@ export const uploadFileToSupabase = async (
         const dataUrl = reader.result.toString();
         const fileType = file.type;
         
-        console.log(`Type du document: ${documentType}`);
-        console.log(`Type de fichier: ${fileType}`);
-        
         try {
           let data;
           let error;
           
           if (documentType === 'medical') {
-            // Enregistrer dans la table medical_documents
             const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
@@ -49,8 +43,6 @@ export const uploadFileToSupabase = async (
               user_id: userId
             };
             
-            console.log('Enregistrement du document dans la table: medical_documents');
-            
             const result = await supabase
               .from('medical_documents')
               .insert([documentData])
@@ -59,7 +51,6 @@ export const uploadFileToSupabase = async (
             data = result.data;
             error = result.error;
           } else if (saveToDirectives) {
-            // Enregistrer dans pdf_documents pour les directives
             const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
@@ -70,8 +61,6 @@ export const uploadFileToSupabase = async (
               user_id: userId
             };
             
-            console.log('Enregistrement du document dans la table: pdf_documents');
-            
             const result = await supabase
               .from('pdf_documents')
               .insert([documentData])
@@ -80,7 +69,6 @@ export const uploadFileToSupabase = async (
             data = result.data;
             error = result.error;
           } else {
-            // Enregistrer dans uploaded_documents pour les autres cas
             const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
@@ -89,8 +77,6 @@ export const uploadFileToSupabase = async (
               file_size: file.size,
               user_id: userId
             };
-            
-            console.log('Enregistrement du document dans la table: uploaded_documents');
             
             const result = await supabase
               .from('uploaded_documents')
@@ -107,7 +93,6 @@ export const uploadFileToSupabase = async (
           }
 
           if (data && data[0]) {
-            console.log("Document enregistré avec succès:", data[0]);
             onUploadComplete(dataUrl, finalFileName, isPrivate);
             toast({
               title: "Document enregistré",

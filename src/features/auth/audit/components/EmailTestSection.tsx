@@ -19,8 +19,6 @@ export const EmailTestSection: React.FC<EmailTestSectionProps> = ({ loading, set
     
     setLoading(true);
     try {
-      console.log('📧 Test avec email réel:', testEmail);
-      
       const { data, error } = await supabase.auth.signUp({
         email: testEmail,
         password: 'TestPassword123!',
@@ -37,7 +35,6 @@ export const EmailTestSection: React.FC<EmailTestSectionProps> = ({ loading, set
           alert(`Erreur: ${error.message}`);
         }
       } else {
-        console.log('✅ Test email envoyé:', data);
         alert('Email de test envoyé ! Vérifiez votre boîte de réception et les spams.');
       }
       

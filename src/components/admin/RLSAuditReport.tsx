@@ -27,10 +27,8 @@ const RLSAuditReportComponent = () => {
   const runRLSAudit = async () => {
     setIsRunning(true);
     try {
-      console.log("🔍 Lancement de l'audit RLS...");
       const report = await rlsAuditor.runRLSAudit();
       setAuditReport(report);
-      console.log("✅ Audit RLS terminé:", report);
     } catch (error) {
       console.error("❌ Erreur lors de l'audit RLS:", error);
     } finally {

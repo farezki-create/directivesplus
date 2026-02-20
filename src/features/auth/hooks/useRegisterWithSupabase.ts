@@ -13,13 +13,8 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec confirmation email Supabase");
-      console.log("Email à inscrire:", values.email);
-      
-      // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Créer l'utilisateur avec confirmation email obligatoire
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -35,8 +30,6 @@ export const useRegisterWithSupabase = () => {
           },
         }
       });
-
-      console.log("Réponse Supabase signUp:", { data, error });
 
       if (error) {
         console.error("❌ Erreur d'inscription:", error);
@@ -68,13 +61,7 @@ export const useRegisterWithSupabase = () => {
       }
 
       if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
-        console.log("Email confirmé:", !!data.user.email_confirmed_at);
-        
-        // Si l'email n'est pas confirmé, c'est normal - Supabase enverra automatiquement un email
         if (!data.user.email_confirmed_at) {
-          console.log("📧 Email de confirmation envoyé automatiquement par Supabase");
-          
           return { 
             success: true, 
             user: data.user, 
@@ -82,8 +69,6 @@ export const useRegisterWithSupabase = () => {
             message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour finaliser votre inscription et accéder à votre espace."
           };
         } else {
-          console.log("✅ Email déjà confirmé, inscription complète");
-          
           return { 
             success: true, 
             user: data.user, 

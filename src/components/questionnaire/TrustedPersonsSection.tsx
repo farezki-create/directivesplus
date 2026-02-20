@@ -54,7 +54,6 @@ const TrustedPersonsSection = () => {
       
       if (error) throw error;
       
-      console.log("Trusted persons data:", data);
       setTrustedPersons(data || []);
     } catch (error: any) {
       console.error('Error fetching trusted persons:', error.message);

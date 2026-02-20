@@ -29,7 +29,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       HDSSessionManager.setSessionStartTime();
       HDSSessionManager.initializeHDSSession();
       
-      console.log("🏥 Session HDS initialisée - Timeout: 8h, Auto-lock: 30min d'inactivité");
+      
     }
   }, [user]);
 

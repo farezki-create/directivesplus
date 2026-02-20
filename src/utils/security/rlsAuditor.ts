@@ -48,7 +48,7 @@ class RLSAuditor {
    * Lance un audit complet des politiques RLS
    */
   async runRLSAudit(): Promise<RLSAuditReport> {
-    console.log("🔍 Démarrage de l'audit RLS...");
+    
     
     const tableResults: RLSAuditResult[] = [];
     const criticalIssues: string[] = [];
@@ -95,7 +95,7 @@ class RLSAuditor {
       timestamp: new Date()
     };
 
-    console.log("✅ Audit RLS terminé:", report);
+    
     return report;
   }
 

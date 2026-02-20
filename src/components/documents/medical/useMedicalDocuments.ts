@@ -50,8 +50,6 @@ export const useMedicalDocuments = (userId: string) => {
 
   const handleVisibilityToggle = async (documentId: string, isPrivate: boolean) => {
     try {
-      console.log('Toggling visibility for document:', documentId, 'isPrivate:', isPrivate);
-      
       // Mettre à jour l'état local immédiatement pour un feedback instantané
       setDocuments(prevDocs => 
         prevDocs.map(doc => 

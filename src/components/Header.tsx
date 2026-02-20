@@ -12,16 +12,12 @@ const Header = () => {
   };
 
   const handleSignOut = async () => {
-    console.log("🔴 === Header: BOUTON DÉCONNEXION CLIQUÉ === 🔴");
-    
     try {
       await signOut();
       setIsMobileMenuOpen(false);
     } catch (error) {
       console.error('❌ Header: Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, fermer le menu et forcer la redirection radicale
       setIsMobileMenuOpen(false);
-      console.log("🚨 Header: REDIRECTION DE SECOURS");
       window.location.replace('/auth');
     }
   };
@@ -45,7 +41,6 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link
               to={isAuthenticated ? "/rediger" : "/"}
@@ -53,7 +48,6 @@ const Header = () => {
             >
               Accueil
             </Link>
-            
             
             {isAuthenticated && (
               <Link
@@ -97,7 +91,6 @@ const Header = () => {
             )}
           </nav>
 
-          {/* User Menu */}
           <div className="md:hidden">
             <button onClick={toggleMobileMenu} className="text-gray-600 hover:text-directiveplus-600 focus:outline-none">
               {isMobileMenuOpen ? (
@@ -110,7 +103,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">

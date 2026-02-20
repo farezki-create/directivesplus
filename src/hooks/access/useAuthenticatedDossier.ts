@@ -11,15 +11,11 @@ interface AuthenticatedDossier {
 
 export const useAuthenticatedDossier = (setLoading: Dispatch<SetStateAction<boolean>>) => {
   const getDossierAuthenticated = async (userId: string, accessType?: string): Promise<AuthenticatedDossier | null> => {
-    console.log(`Getting dossier for authenticated user: ${userId} (Type: ${accessType || 'full'})`);
-    
     setLoading(true);
     try {
       const result = await getUserDossier(userId);
       
       if (result.success && result.dossier) {
-        console.log("Successfully loaded dossier from local API:", result.dossier);
-        
         const convertedDossier: AuthenticatedDossier = {
           id: result.dossier.id,
           userId: result.dossier.userId,

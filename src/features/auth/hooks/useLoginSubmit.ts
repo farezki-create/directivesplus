@@ -21,8 +21,6 @@ export const useLoginSubmit = ({
     setLoading(true);
     
     try {
-      console.log("🔐 Tentative de connexion pour:", values.email);
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
@@ -66,8 +64,6 @@ export const useLoginSubmit = ({
       }
       
       if (data.user) {
-        console.log("✅ Connexion réussie pour l'utilisateur:", data.user.id);
-        
         if (!data.user.email_confirmed_at) {
           console.warn("⚠️ Email non confirmé pour l'utilisateur connecté");
           
@@ -93,7 +89,6 @@ export const useLoginSubmit = ({
         setRedirectInProgress(true);
         
         setTimeout(() => {
-          console.log("🚀 Redirection vers /rediger");
           window.location.href = "/rediger";
         }, 1000);
       }

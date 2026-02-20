@@ -25,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('🔍 [AUTH-CONTEXT] Récupération profil pour utilisateur:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -36,10 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('❌ [AUTH-CONTEXT] Erreur récupération profil:', error);
         setProfile(null);
       } else if (data) {
-        console.log('✅ [AUTH-CONTEXT] Profil récupéré:', data);
         setProfile(data);
       } else {
-        console.log('ℹ️ [AUTH-CONTEXT] Aucun profil trouvé pour cet utilisateur');
         setProfile(null);
       }
     } catch (error) {
@@ -52,7 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (user?.id) {
-        console.log('🔐 [AUTH-CONTEXT] Vérification rôle admin côté serveur pour:', user.id);
         const { data, error } = await supabase.rpc('has_role', {
           _user_id: user.id,
           _role: 'admin'
@@ -63,7 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAdmin(false);
         } else {
           setIsAdmin(!!data);
-          console.log('✅ [AUTH-CONTEXT] Rôle admin vérifié:', !!data);
         }
       } else {
         setIsAdmin(false);
@@ -74,26 +69,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   useEffect(() => {
-    console.log('🔄 [AUTH-CONTEXT] Initialisation AuthContext avec gestion HDS');
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 [AUTH-CONTEXT] Auth state changed:', event, session?.user?.id || 'no user');
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
-          // Initialiser la session HDS pour les utilisateurs authentifiés
           HDSSessionManager.setSessionStartTime();
           HDSSessionManager.initializeHDSSession();
-          console.log("🏥 Session HDS initialisée - Timeout: 8h, Auto-lock: 30min");
           
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 100);
         } else {
-          // Nettoyer la session HDS lors de la déconnexion
           HDSSessionManager.destroy();
           setProfile(null);
         }
@@ -110,16 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('❌ [AUTH-CONTEXT] Erreur session initiale:', error);
         }
         
-        console.log('🔍 [AUTH-CONTEXT] Session initiale:', session?.user?.id || 'aucune session');
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
-          // Initialiser la session HDS dès le démarrage si utilisateur connecté
           HDSSessionManager.setSessionStartTime();
           HDSSessionManager.initializeHDSSession();
-          console.log("🏥 Session HDS initialisée au démarrage");
           
           await fetchUserProfile(session.user.id);
         }
@@ -134,7 +118,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
-      // Nettoyer la session HDS au démontage du contexte
       HDSSessionManager.destroy();
     };
   }, []);
@@ -146,19 +129,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sessionCheckInterval = setInterval(() => {
       const isValid = HDSSessionManager.isSessionValid();
       if (!isValid) {
-        console.log("❌ Session HDS expirée - déconnexion automatique");
         signOut();
       }
-    }, 60000); // Vérifier toutes les minutes
+    }, 60000);
 
     return () => clearInterval(sessionCheckInterval);
   }, [user]);
 
   const signOut = async () => {
     try {
-      console.log('🚪 [AUTH-CONTEXT] Déconnexion avec nettoyage HDS...');
-      
-      // Nettoyer la session HDS avant la déconnexion Supabase
       HDSSessionManager.destroy();
       
       const { error } = await supabase.auth.signOut();
@@ -168,10 +147,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setProfile(null);
-      console.log('✅ [AUTH-CONTEXT] Déconnexion réussie avec nettoyage HDS');
     } catch (error) {
       console.error('❌ [AUTH-CONTEXT] Erreur de déconnexion:', error);
-      // Forcer le nettoyage même en cas d'erreur
       HDSSessionManager.destroy();
       throw error;
     }

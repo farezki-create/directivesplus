@@ -51,7 +51,7 @@ interface ErrorHandlingAnalysis {
 
 export class SupabaseAuthAnalyzer {
   static async analyzeAuthentication(): Promise<SupabaseAuthAnalysis> {
-    console.log('🔍 Analyse approfondie de l\'authentification Supabase...');
+    // Analyse approfondie de l'authentification Supabase
     
     const clientConfig = await this.analyzeClientConfig();
     const authFlows = this.analyzeAuthFlows();

@@ -53,7 +53,7 @@ class AuditManager {
    * Lance un audit complet de sécurité
    */
   async runFullAudit(): Promise<AuditReport> {
-    console.log("🔍 Démarrage de l'audit de sécurité complet...");
+    
     
     const categories: AuditCategory[] = [];
     const criticalIssues: CriticalIssue[] = [];
@@ -129,7 +129,7 @@ class AuditManager {
       readyForProduction: overallScore >= 80 && criticalIssues.length === 0
     };
 
-    console.log("✅ Audit terminé:", report);
+    
     return report;
   }
 
