@@ -33,8 +33,6 @@ export const InstitutionAccessFormComplete: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(`Form field change - ${name}`);
-    
     if (validationErrors[name]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -57,16 +55,12 @@ export const InstitutionAccessFormComplete: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submission attempt");
-    
     const errors = validateInstitutionAccessForm(formData);
     if (Object.keys(errors).length > 0) {
-      console.log("Validation errors:", errors);
       setValidationErrors(errors);
       return;
     }
     
-    console.log("Form validation passed, submitting...");
     setValidationErrors({});
     setSubmitted(true);
   };

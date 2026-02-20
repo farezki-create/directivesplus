@@ -35,25 +35,17 @@ export const useSharedDocument = () => {
       }
 
       try {
-        // Run comprehensive diagnostics
         const { allSharedDocs } = await runComprehensiveDiagnostics(shareCode);
         await checkProfilesTable(shareCode);
         
-        // Search for exact matches
         const { exactMatch } = await searchExactMatch(shareCode);
         const { accessCodes } = await searchAccessCodes(shareCode);
         
-        // Test RPC function
         await testRpcFunction(shareCode);
-        
-        // Run explicit table searches
         await runExplicitTableSearches(shareCode);
 
-        // Process results
         if (exactMatch && exactMatch.length > 0) {
           const documentData = exactMatch[0];
-          console.log("✅ Document trouvé dans shared_documents:", documentData);
-
           const transformedDocument = transformSharedDocument(documentData);
           setSharedDocument(transformedDocument);
           
@@ -62,9 +54,6 @@ export const useSharedDocument = () => {
             description: "Accès autorisé au document partagé",
           });
         } else if (accessCodes && accessCodes.length > 0) {
-          console.log("✅ Code trouvé dans document_access_codes:", accessCodes[0]);
-          
-          // Get associated document
           const { docData, docError } = await getAssociatedDocument(accessCodes[0].document_id);
 
           if (docData && !docError) {
@@ -76,22 +65,17 @@ export const useSharedDocument = () => {
               description: "Accès autorisé via code d'accès",
             });
           } else {
-            console.log("❌ Document associé non trouvé:", { docData, docError });
             setError("Document associé introuvable");
           }
         } else {
-          console.log("❌ Code non trouvé dans aucune table");
-          
-          // Run final diagnostic
           if (allSharedDocs) {
             runFinalDiagnostic(shareCode, allSharedDocs);
           }
-
           setError(`Code "${shareCode}" introuvable. Consultez les logs pour le diagnostic complet.`);
         }
 
       } catch (err) {
-        console.error("❌ Erreur lors du diagnostic:", err);
+        console.error("Erreur lors du diagnostic:", err);
         setError(`Erreur technique: ${err}`);
       } finally {
         setLoading(false);

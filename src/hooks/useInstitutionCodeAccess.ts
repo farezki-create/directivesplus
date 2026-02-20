@@ -41,7 +41,6 @@ export const useInstitutionCodeAccess = (
   useEffect(() => {
     const tryInstitutionAccess = async () => {
       if (!hasAllParams || !code || !nom || !prenom || !naissance || !professionalId) {
-        console.log("Paramètres manquants pour l'accès institution:", { code, nom, prenom, naissance, professionalId });
         return;
       }
 
@@ -55,15 +54,6 @@ export const useInstitutionCodeAccess = (
         return;
       }
 
-      console.log("Début de la tentative d'accès par code institution:", { 
-        code, 
-        nom, 
-        prenom, 
-        naissance, 
-        professionalId: professionalIdValidation.formattedNumber,
-        professionalIdType: professionalIdValidation.type
-      });
-      
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       try {
@@ -86,11 +76,7 @@ export const useInstitutionCodeAccess = (
             input_institution_code: code,
           });
 
-        console.log("Résultat RPC:", { accessResult, accessError });
-
         if (accessError) {
-          console.error("Erreur RPC:", accessError);
-          
           await supabase
             .from('document_access_logs')
             .insert({
@@ -126,7 +112,6 @@ export const useInstitutionCodeAccess = (
         }
 
         const result = accessResult[0] as SupabaseAccessResponse;
-        console.log("Résultat parsé:", result);
         
         if (!result.access_granted) {
           await supabase
@@ -229,7 +214,6 @@ export const useInstitutionCodeAccess = (
         );
 
         if (firstPdfDocument) {
-          console.log("Ouverture automatique dans le viewer interne:", firstPdfDocument);
           setTimeout(() => {
             window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
           }, 1000);

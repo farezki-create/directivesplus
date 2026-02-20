@@ -80,7 +80,6 @@ const UserManagementDashboard = () => {
   );
 
   const handleUserAction = (action: string, userId: string) => {
-    console.log(`Action ${action} pour l'utilisateur ${userId}`);
     // Implémenter les actions spécifiques
   };
 

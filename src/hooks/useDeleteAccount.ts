@@ -15,18 +15,12 @@ export const useDeleteAccount = () => {
     try {
       setIsDeleting(true);
       
-      console.log('🗑️ [DELETE-ACCOUNT] Starting account deletion process');
-      
-      // Obtenir le token d'authentification actuel
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error("Session utilisateur non trouvée");
       }
       
-      console.log('🔑 [DELETE-ACCOUNT] Session found, calling deletion endpoint');
-      
-      // Appeler la edge function qui va gérer la suppression des données
       const response = await fetch(
         "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/deleteUserAccount",
         {
@@ -38,21 +32,15 @@ export const useDeleteAccount = () => {
         }
       );
       
-      console.log('📡 [DELETE-ACCOUNT] Response status:', response.status);
-      
       let responseData;
       try {
         responseData = await response.json();
-        console.log('📄 [DELETE-ACCOUNT] Response data:', responseData);
       } catch (parseError) {
-        console.error('❌ [DELETE-ACCOUNT] Failed to parse response:', parseError);
+        console.error('Failed to parse response:', parseError);
         throw new Error("Erreur de communication avec le serveur");
       }
       
       if (!response.ok) {
-        console.error('❌ [DELETE-ACCOUNT] HTTP error:', response.status, responseData);
-        
-        // Gestion spécifique des erreurs HTTP
         if (response.status === 401) {
           throw new Error("Session expirée. Veuillez vous reconnecter.");
         } else if (response.status === 403) {
@@ -65,31 +53,23 @@ export const useDeleteAccount = () => {
       }
       
       if (!responseData?.success) {
-        console.error('❌ [DELETE-ACCOUNT] Operation failed:', responseData);
         throw new Error(responseData?.error || responseData?.details || "La suppression du compte a échoué");
       }
       
-      console.log('✅ [DELETE-ACCOUNT] Account deletion successful');
-      
-      // Nettoyer l'état d'authentification
       cleanupAuthState();
       
-      // Afficher un message de succès
       toast({
         title: "Compte supprimé",
         description: "Votre compte et toutes vos données ont été supprimés avec succès.",
       });
       
-      // Rediriger vers la page d'accueil
       navigate("/");
       
     } catch (error: any) {
-      console.error('❌ [DELETE-ACCOUNT] Error during deletion:', error);
+      console.error('Error during deletion:', error);
       
-      // Utiliser le gestionnaire d'erreur centralisé
       await handleError(error, 'deleteAccount', error.message);
       
-      // Toast d'erreur plus spécifique
       toast({
         title: "Erreur lors de la suppression",
         description: error.message || "Une erreur est survenue. Veuillez réessayer plus tard.",

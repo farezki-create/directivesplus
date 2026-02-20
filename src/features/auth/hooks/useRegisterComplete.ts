@@ -12,20 +12,15 @@ export const useRegisterComplete = () => {
     setIsLoading(true);
     
     try {
-      console.log("🚀 Début inscription pour:", values.email);
-      
       // Nettoyer l'état d'authentification existant
       try {
         await supabase.auth.signOut();
       } catch (e) {
-        console.log("Nettoyage préventif ignoré:", e);
+        // Nettoyage préventif ignoré
       }
 
-      // Formater le numéro de téléphone complet
       const fullPhoneNumber = `+33${values.phoneNumber.replace(/\D/g, '')}`;
-      console.log("📞 Numéro formaté:", fullPhoneNumber);
 
-      // Inscription Supabase
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -43,17 +38,14 @@ export const useRegisterComplete = () => {
       });
 
       if (error) {
-        console.error("❌ Erreur Supabase:", error);
+        console.error("Erreur Supabase:", error);
         throw error;
       }
 
       if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
-        
         // Envoyer email via Resend
         try {
-          console.log("📧 Envoi email de confirmation...");
-          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
+          const { error: emailError } = await supabase.functions.invoke('send-auth-email', {
             body: {
               email: values.email,
               type: 'confirmation',
@@ -63,18 +55,15 @@ export const useRegisterComplete = () => {
           });
 
           if (emailError) {
-            console.error("❌ Erreur email:", emailError);
-          } else {
-            console.log("✅ Email envoyé via Resend");
+            console.error("Erreur email:", emailError);
           }
         } catch (emailErr) {
-          console.warn("⚠️ Erreur email (non bloquante):", emailErr);
+          console.warn("Erreur email (non bloquante):", emailErr);
         }
 
         // Envoyer SMS via Twilio
         try {
-          console.log("📱 Envoi SMS de bienvenue...");
-          const { data: smsData, error: smsError } = await supabase.functions.invoke('send-twilio-sms', {
+          const { error: smsError } = await supabase.functions.invoke('send-twilio-sms', {
             body: {
               phoneNumber: fullPhoneNumber,
               userId: data.user.id
@@ -82,12 +71,10 @@ export const useRegisterComplete = () => {
           });
 
           if (smsError) {
-            console.error("❌ Erreur SMS:", smsError);
-          } else {
-            console.log("✅ SMS envoyé via Twilio");
+            console.error("Erreur SMS:", smsError);
           }
         } catch (smsErr) {
-          console.warn("⚠️ Erreur SMS (non bloquante):", smsErr);
+          console.warn("Erreur SMS (non bloquante):", smsErr);
         }
 
         toast({
@@ -111,7 +98,7 @@ export const useRegisterComplete = () => {
       };
       
     } catch (error: any) {
-      console.error("❌ Erreur inscription:", error);
+      console.error("Erreur inscription:", error);
       
       let errorMessage = "Une erreur est survenue lors de l'inscription";
       

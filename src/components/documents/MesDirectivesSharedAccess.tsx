@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,17 +44,11 @@ export function MesDirectivesSharedAccess() {
       }
 
       try {
-        console.log("=== ACCÈS DIRECT AUX DOCUMENTS PARTAGÉS ===");
-        console.log("Code de partage:", sharedCode);
-
-        // Récupération directe des documents partagés
         const { data: sharedDocuments, error } = await supabase
           .from('shared_documents')
           .select('*')
           .eq('access_code', sharedCode)
           .eq('is_active', true);
-
-        console.log("Documents partagés trouvés:", { sharedDocuments, error });
 
         if (error) {
           console.error("Erreur lors de la requête:", error);
@@ -66,7 +59,6 @@ export function MesDirectivesSharedAccess() {
           throw new Error("Aucun document trouvé avec ce code de partage");
         }
 
-        // Vérifier que les documents ne sont pas expirés
         const validDocuments = sharedDocuments.filter(doc => 
           !doc.expires_at || new Date(doc.expires_at) > new Date()
         );
@@ -75,7 +67,6 @@ export function MesDirectivesSharedAccess() {
           throw new Error("Ce lien de partage a expiré");
         }
 
-        // Récupérer les informations du propriétaire pour affichage
         const { data: profile } = await supabase
           .from('profiles')
           .select('first_name, last_name')
@@ -84,7 +75,6 @@ export function MesDirectivesSharedAccess() {
 
         setOwnerInfo(profile);
 
-        // Transformer les documents
         const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SupabaseSharedDocument) => {
           const docData = sharedDoc.document_data as SharedDocumentData;
           return {
@@ -103,7 +93,6 @@ export function MesDirectivesSharedAccess() {
         });
 
         setDocuments(transformedDocuments);
-        console.log("Accès direct accordé, documents disponibles:", transformedDocuments.length);
 
       } catch (error: any) {
         console.error("Erreur lors du chargement:", error);
@@ -217,7 +206,6 @@ export function MesDirectivesSharedAccess() {
       <AppNavigation hideEditingFeatures={true} />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header avec informations */}
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Shield className="h-6 w-6 text-green-600" />
@@ -238,7 +226,6 @@ export function MesDirectivesSharedAccess() {
             </p>
           </div>
 
-          {/* Alerte d'urgence */}
           <Card className="mb-6 border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
@@ -256,7 +243,6 @@ export function MesDirectivesSharedAccess() {
             </CardContent>
           </Card>
 
-          {/* Liste des documents */}
           {documents.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
@@ -281,7 +267,6 @@ export function MesDirectivesSharedAccess() {
             </div>
           )}
 
-          {/* Footer informatif */}
           <Card className="mt-6 bg-blue-50 border-blue-200">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">

@@ -20,8 +20,6 @@ export const useQRCodeModal = () => {
       return false;
     }
 
-    console.log("useQRCodeModal: Ouverture modal pour", { documentId, documentName, filePath });
-
     setModalState({
       documentId: documentId.trim(),
       documentName: documentName.trim() || "Document",
@@ -32,7 +30,6 @@ export const useQRCodeModal = () => {
   }, []);
 
   const closeQRCodeModal = useCallback(() => {
-    console.log("useQRCodeModal: Fermeture modal");
     setModalState({
       documentId: null,
       documentName: "",
