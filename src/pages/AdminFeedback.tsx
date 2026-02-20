@@ -7,11 +7,16 @@ import Footer from "@/components/Footer";
 import FeedbackAdminDashboard from "@/components/feedback/FeedbackAdminDashboard";
 
 const AdminFeedback = () => {
-  const { user } = useAuth();
+  const { isAdmin, isLoading } = useAuth();
   
-  // Vérifier si l'utilisateur est admin
-  const isAdmin = user?.email?.endsWith('@directivesplus.fr');
-  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }

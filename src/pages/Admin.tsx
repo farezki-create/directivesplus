@@ -8,12 +8,9 @@ import { useUsersList } from "@/hooks/useUsersList";
 import BackButton from '@/components/ui/back-button';
 
 export default function AdminPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { users, isLoading: usersLoading, fetchUsers } = useUsersList();
-
-  // Check if user is admin based on email domain
-  const isAdmin = isAuthenticated && user?.email?.endsWith('@directivesplus.fr');
 
   // Handle unauthorized access
   useEffect(() => {
@@ -24,7 +21,7 @@ export default function AdminPage() {
       navigate("/");
       return;
     }
-  }, [user, isAuthenticated, isLoading, isAdmin, navigate]);
+  }, [isAuthenticated, isLoading, isAdmin, navigate]);
 
   // Fetch users when authenticated as admin
   useEffect(() => {
