@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -35,15 +35,12 @@ import ExemplesPhrases from "./pages/ExemplesPhrases";
 
 import InstitutionAccess from "./pages/InstitutionAccess";
 import MentionsLegales from "./pages/MentionsLegales";
-import LegalMentions from "./pages/LegalMentions";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
-import Confidentialite from "./pages/Confidentialite";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import DonCarteBancaire from "./pages/DonCarteBancaire";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import AlertesSoignants from "./pages/AlertesSoignants";
-import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
 import SupabaseAuditPage from "./pages/SupabaseAuditPage";
 import AdminMonitoring from "./pages/AdminMonitoring";
 import AdminOptimization from "./pages/AdminOptimization";
@@ -87,9 +84,10 @@ function App() {
                   
                   <Route path="/acces-institution" element={<InstitutionAccess />} />
                   <Route path="/mentions-legales" element={<MentionsLegales />} />
-                  <Route path="/legal-mentions" element={<LegalMentions />} />
+                  {/* Redirections des doublons */}
+                  <Route path="/legal-mentions" element={<Navigate to="/mentions-legales" replace />} />
+                  <Route path="/confidentialite" element={<Navigate to="/politique-confidentialite" replace />} />
                   <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-                  <Route path="/confidentialite" element={<Confidentialite />} />
                   <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                   <Route path="/don-carte-bancaire" element={<DonCarteBancaire />} />
                   <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
@@ -132,11 +130,7 @@ function App() {
                   />
                   <Route 
                     path="/security-audit-report" 
-                    element={
-                      <ProtectedRoute requireAdmin={true}>
-                        <SecurityAuditPage />
-                      </ProtectedRoute>
-                    } 
+                    element={<Navigate to="/admin/security-audit" replace />}
                   />
                   <Route 
                     path="/admin/strict-rls" 
@@ -150,17 +144,13 @@ function App() {
                     path="/admin/supabase-audit" 
                     element={
                       <ProtectedRoute requireAdmin={true}>
-                        <AdminSupabaseAudit />
+                        <SupabaseAuditPage />
                       </ProtectedRoute>
                     } 
                   />
                   <Route 
                     path="/supabase-audit" 
-                    element={
-                      <ProtectedRoute requireAdmin={true}>
-                        <SupabaseAuditPage />
-                      </ProtectedRoute>
-                    } 
+                    element={<Navigate to="/admin/supabase-audit" replace />}
                   />
                   <Route 
                     path="/admin/monitoring" 

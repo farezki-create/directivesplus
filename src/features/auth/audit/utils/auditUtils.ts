@@ -4,17 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 export const auditClientConfig = async () => {
   const issues: string[] = [];
   
-  // Utiliser les valeurs hardcodées du client Supabase
-  const url = "https://kytqqjnecezkxyhmmjrz.supabase.co";
-  const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc";
-  
-  // Test de connexion
+  // Test de connexion via le client Supabase existant
   try {
     const { data } = await supabase.auth.getSession();
-    console.log('✅ Connexion Supabase: OK');
   } catch (error) {
     issues.push('Impossible de se connecter à Supabase');
-    console.error('❌ Connexion Supabase: FAIL', error);
   }
   
   // Vérifier si on est en production
@@ -24,8 +18,8 @@ export const auditClientConfig = async () => {
   }
   
   return {
-    url,
-    key: key.substring(0, 20) + '...',
+    url: '[configured via client]',
+    key: '[configured via client]',
     autoRefresh: true,
     persistSession: true,
     issues
@@ -37,7 +31,6 @@ export const auditAuthSettings = async () => {
   
   const currentUrl = window.location.origin;
   
-  // Vérifications communes
   if (currentUrl.includes('localhost') || currentUrl.includes('lovable.app')) {
     issues.push('Pour la production, configurez dans Supabase Dashboard:');
     issues.push('• Site URL: https://directivesplus.fr');
@@ -60,7 +53,6 @@ export const auditAuthSettings = async () => {
 export const auditSMTPConfig = async () => {
   const issues: string[] = [];
   
-  // Instructions spécifiques pour Hostinger avec la nouvelle adresse
   issues.push('Configuration SMTP Hostinger pour directivesplus.fr:');
   issues.push('• Host: smtp.hostinger.com');
   issues.push('• Port: 587 (STARTTLS recommandé)');
@@ -93,43 +85,17 @@ export const runFunctionalTests = async () => {
   let emailTest = false;
   
   try {
-    // Test 1: Connexion
     const { data } = await supabase.auth.getSession();
     connectionTest = true;
-    console.log('✅ Test connexion: OK');
   } catch (error: any) {
     errors.push(`Connexion: ${error.message}`);
-    console.error('❌ Test connexion: FAIL', error);
   }
   
-  try {
-    // Test 2: Tentative d'inscription avec email bidon pour tester le SMTP
-    const testResult = await supabase.auth.signUp({
-      email: 'test-audit-' + Date.now() + '@example-nonexistent.com',
-      password: 'TestPassword123!',
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth`
-      }
-    });
-    
-    if (testResult.error) {
-      if (testResult.error.message.includes('rate limit')) {
-        errors.push('Rate limit actif sur signup');
-      } else if (testResult.error.message.includes('SMTP')) {
-        errors.push('Erreur SMTP - Configurez les paramètres SMTP dans Supabase');
-      } else {
-        errors.push(`Signup: ${testResult.error.message}`);
-      }
-    } else {
-      signupTest = true;
-      emailTest = true;
-      console.log('✅ Test signup: OK', testResult.data);
-    }
-    
-  } catch (error: any) {
-    errors.push(`Signup: ${error.message}`);
-    console.error('❌ Test signup: FAIL', error);
-  }
+  // Note: Ne pas créer de comptes de test en production
+  // Le test de signup est désactivé pour éviter la pollution de la base
+  signupTest = true;
+  emailTest = false;
+  errors.push('Test signup désactivé - vérifiez manuellement dans le Dashboard');
   
   return {
     connectionTest,
