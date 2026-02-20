@@ -51,12 +51,6 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
   const logPrefix = `[${logLevel.toUpperCase()}][${metadata.type}]`;
   
   switch(logLevel) {
-    case LogLevel.DEBUG:
-      console.debug(`${logPrefix}:`, errorObject);
-      break;
-    case LogLevel.INFO:
-      console.info(`${logPrefix}:`, errorObject);
-      break;
     case LogLevel.WARNING:
       console.warn(`${logPrefix}:`, errorObject);
       break;
@@ -65,7 +59,7 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
       console.error(`${logPrefix}:`, errorObject);
       break;
     default:
-      console.log(`${logPrefix}:`, errorObject);
+      break;
   }
 
   // Récupérer l'utilisateur connecté si disponible

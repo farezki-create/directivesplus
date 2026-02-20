@@ -17,7 +17,7 @@ export async function logAccountDeletion(
       timestamp: new Date().toISOString()
     };
     
-    console.log('📝 [LOGGING] Account deletion log:', logData);
+    
     
     // Utiliser une table simple pour le logging si elle existe
     // Sinon, juste logger dans la console

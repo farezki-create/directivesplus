@@ -10,8 +10,6 @@ interface DirectivesContentProps {
 }
 
 const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => {
-  console.log("DirectivesContent - Directives reçues:", directives);
-
   if (!directives || directives.length === 0) {
     return (
       <Card className="border-amber-200 bg-amber-50">

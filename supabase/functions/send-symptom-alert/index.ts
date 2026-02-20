@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
@@ -48,22 +47,18 @@ interface AlertRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // SECURITY: Validate JWT token and authenticate user
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      console.error('❌ No authorization header provided')
       throw new Error('Unauthorized: Missing authentication token')
     }
 
     const token = authHeader.replace('Bearer ', '')
     
-    // Create client with user token for auth validation
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -74,24 +69,19 @@ serve(async (req) => {
       }
     )
 
-    // Verify user authentication
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
     if (authError || !user) {
-      console.error('❌ Authentication failed:', authError?.message)
+      console.error('Authentication failed:', authError?.message)
       throw new Error('Unauthorized: Invalid authentication token')
     }
 
-    console.log('✅ User authenticated:', user.id)
-
-    // Parse and validate request body
     const requestBody = await req.json()
     
-    // SECURITY: Input validation
     let validatedData: z.infer<typeof alertSchema>
     try {
       validatedData = alertSchema.parse(requestBody)
     } catch (validationError) {
-      console.error('❌ Input validation failed:', validationError)
+      console.error('Input validation failed:', validationError)
       if (validationError instanceof z.ZodError) {
         throw new Error(`Invalid input: ${validationError.errors.map(e => e.message).join(', ')}`)
       }
@@ -100,7 +90,6 @@ serve(async (req) => {
 
     const { patient_id, critical_symptoms, contacts, settings } = validatedData
 
-    // SECURITY: Verify patient ownership
     const { data: patientCheck, error: ownershipError } = await supabaseClient
       .from('profiles')
       .select('id')
@@ -109,8 +98,7 @@ serve(async (req) => {
       .single()
 
     if (ownershipError || !patientCheck) {
-      console.error('❌ Unauthorized access attempt to patient:', patient_id, 'by user:', user.id)
-      // Log security event
+      console.error('Unauthorized access attempt to patient:', patient_id, 'by user:', user.id)
       await supabaseClient.rpc('log_security_event', {
         p_event_type: 'unauthorized_alert_attempt',
         p_user_id: user.id,
@@ -120,17 +108,11 @@ serve(async (req) => {
       throw new Error('Unauthorized: You can only send alerts for your own account')
     }
 
-    // Create service role client for operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
-    
-    console.log("🚨 Processing symptom alert for patient:", patient_id)
-    console.log("📋 Critical symptoms:", critical_symptoms)
-    console.log("👥 Number of contacts:", contacts.length)
 
-    // Get patient info using admin client
     const { data: patientProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('first_name, last_name')
@@ -142,7 +124,6 @@ serve(async (req) => {
       throw new Error("Patient profile not found")
     }
     
-    // Log successful alert initiation
     await supabaseAdmin.rpc('log_security_event', {
       p_event_type: 'symptom_alert_sent',
       p_user_id: user.id,
@@ -155,27 +136,18 @@ serve(async (req) => {
     }).catch(err => console.error('Failed to log security event:', err))
 
     const patientName = `${patientProfile.first_name} ${patientProfile.last_name}`
-    
-    // Prepare alert message for SMS
     const alertMessage = `🚨 ALERTE SYMPTÔMES CRITIQUES 🚨\n\nPatient: ${patientName}\nSymptômes critiques:\n${critical_symptoms.join('\n')}\n\nContactez immédiatement le patient ou les services d'urgence si nécessaire.\n\nDirectivesPlus - ${new Date().toLocaleString('fr-FR')}`
 
     const notifications = []
-
-    // Configuration Twilio
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
 
-    // Send SMS notifications to each contact
     for (const contact of contacts) {
       try {
-        // Send SMS if contact has phone number
         if (contact.phone_number) {
-          console.log(`📱 Sending SMS to: ${contact.phone_number}`)
-          
           if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-            console.log('Configuration Twilio manquante - simulation uniquement')
-            console.log(`SMS Twilio simulé envoyé à ${contact.phone_number}: ${alertMessage}`)
+            console.warn('Configuration Twilio manquante - simulation uniquement')
             
             notifications.push({
               contact_id: contact.id,
@@ -186,7 +158,6 @@ serve(async (req) => {
             })
           } else {
             try {
-              // Envoyer réellement via Twilio
               const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)
               
               const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, {
@@ -208,7 +179,6 @@ serve(async (req) => {
               }
 
               const result = await response.json()
-              console.log('SMS envoyé avec succès via Twilio:', result.sid)
 
               notifications.push({
                 contact_id: contact.id,
@@ -230,10 +200,7 @@ serve(async (req) => {
           }
         }
 
-        // Send email as fallback if no phone number
         if (!contact.phone_number && contact.email) {
-          console.log(`📧 Sending fallback email to: ${contact.email}`)
-          
           const { error: emailError } = await supabaseClient.functions.invoke('send-auth-email', {
             body: {
               email: contact.email,
@@ -278,7 +245,6 @@ serve(async (req) => {
       }
     }
 
-    // Log notifications in database using admin client
     for (const notification of notifications) {
       if (notification.status === 'sent' || notification.status === 'simulated') {
         await supabaseAdmin
@@ -295,7 +261,6 @@ serve(async (req) => {
     }
 
     const successCount = notifications.filter(n => n.status === 'sent' || n.status === 'simulated').length
-    console.log(`✅ Alert processing complete. ${successCount} notifications sent successfully`)
 
     return new Response(
       JSON.stringify({

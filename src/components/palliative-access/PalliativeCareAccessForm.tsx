@@ -30,12 +30,10 @@ export const PalliativeCareAccessForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(`Changement dans le champ ${name}:`, value);
     
     // Pour le champ professionalId, ne garder que les chiffres
     if (name === 'professionalId') {
       const numericValue = value.replace(/[^0-9]/g, '');
-      console.log(`Valeur numérique filtrée pour ${name}:`, numericValue);
       setFormData(prev => ({ ...prev, [name]: numericValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -56,7 +54,6 @@ export const PalliativeCareAccessForm: React.FC = () => {
       return;
     }
     
-    console.log("Soumission du formulaire d'accès palliatif avec les données:", formData);
     setSubmitted(true);
   };
 

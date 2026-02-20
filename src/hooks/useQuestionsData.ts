@@ -35,7 +35,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
         return;
       }
       
-      console.log(`Fetching questions from table: ${tableName} for type: ${questionnaireType}`);
+      
       
       try {
         // Fetching questions with detailed error logging
@@ -58,7 +58,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
           throw questionsError;
         }
         
-        console.log(`Questions data received (${questionsData?.length || 0} records):`, questionsData);
+        
         
         if (!questionsData || questionsData.length === 0) {
           console.warn(`No questions found in table: ${tableName}`);
@@ -100,7 +100,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
           }));
         }
         
-        console.log('Formatted questions:', formattedQuestions);
+        
         setQuestions(formattedQuestions);
         
       } catch (err: any) {

@@ -17,7 +17,7 @@ serve(async (req) => {
   try {
     const { email, type, confirmation_url, recovery_url }: EmailRequest = await req.json()
     
-    console.log(`📧 Traitement email "${type}" pour: ${email}`)
+    
 
     let subject = ''
     let htmlContent = ''
@@ -50,7 +50,7 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté : ${type}`)
     }
 
-    console.log('✅ Email traité (pas d\'envoi configuré)')
+    
 
     return new Response(
       JSON.stringify({ success: true, message: 'Email traité' }),

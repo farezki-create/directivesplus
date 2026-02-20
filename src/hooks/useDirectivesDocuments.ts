@@ -15,16 +15,12 @@ export const useDirectivesDocuments = () => {
   const [showAddOptions, setShowAddOptions] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
-  // Load documents
   const loadDocuments = async () => {
     if (!user?.id) {
-      console.log("useDirectivesDocuments - Pas d'utilisateur connecté");
       setDocuments([]);
       setIsLoading(false);
       return;
     }
-
-    console.log("useDirectivesDocuments - Chargement des documents pour user:", user.id);
 
     try {
       const { data, error } = await supabase
@@ -44,30 +40,21 @@ export const useDirectivesDocuments = () => {
         return;
       }
 
-      console.log("useDirectivesDocuments - Documents chargés:", data);
-
-      // Transform data to match Document interface
-      const transformedDocuments: Document[] = (data || []).map(doc => {
-        const transformedDoc: Document = {
-          id: doc.id,
-          file_name: doc.file_name,
-          file_path: doc.file_path,
-          file_type: doc.content_type || 'application/pdf',
-          content_type: doc.content_type,
-          user_id: doc.user_id,
-          created_at: doc.created_at,
-          description: doc.description,
-          file_size: doc.file_size,
-          updated_at: doc.updated_at,
-          external_id: doc.external_id
-        };
-        
-        console.log("useDirectivesDocuments - Document transformé:", transformedDoc);
-        return transformedDoc;
-      });
+      const transformedDocuments: Document[] = (data || []).map(doc => ({
+        id: doc.id,
+        file_name: doc.file_name,
+        file_path: doc.file_path,
+        file_type: doc.content_type || 'application/pdf',
+        content_type: doc.content_type,
+        user_id: doc.user_id,
+        created_at: doc.created_at,
+        description: doc.description,
+        file_size: doc.file_size,
+        updated_at: doc.updated_at,
+        external_id: doc.external_id
+      }));
 
       setDocuments(transformedDocuments);
-      console.log("useDirectivesDocuments - Total documents:", transformedDocuments.length);
     } catch (error) {
       console.error('Error loading documents:', error);
       setDocuments([]);
@@ -91,8 +78,6 @@ export const useDirectivesDocuments = () => {
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
-      console.log("useDirectivesDocuments - handleDownload:", filePath, fileName);
-      
       const link = document.createElement('a');
       link.href = filePath;
       link.download = fileName;
@@ -116,8 +101,6 @@ export const useDirectivesDocuments = () => {
   };
 
   const handlePrint = (filePath: string, fileType?: string) => {
-    console.log("useDirectivesDocuments - handlePrint:", filePath, fileType);
-    
     const printWindow = window.open(filePath, '_blank');
     if (printWindow) {
       printWindow.onload = () => {
@@ -133,9 +116,6 @@ export const useDirectivesDocuments = () => {
   };
 
   const handleView = (filePath: string, fileType?: string) => {
-    console.log("useDirectivesDocuments - handleView:", filePath, fileType);
-    
-    // Pour les PDFs et autres documents, ouvrir dans un nouvel onglet
     window.open(filePath, '_blank');
   };
 

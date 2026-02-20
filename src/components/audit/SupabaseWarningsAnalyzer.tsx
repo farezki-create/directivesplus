@@ -42,24 +42,10 @@ export const SupabaseWarningsAnalyzer = () => {
     const foundWarnings: WarningItem[] = [];
 
     try {
-      // 1. Analyser les tables sans RLS
-      console.log('🔍 Analyse des politiques RLS...');
       await analyzeRLSPolicies(foundWarnings);
-
-      // 2. Analyser les fonctions avec problèmes de sécurité
-      console.log('🔍 Analyse des fonctions...');
       await analyzeFunctions(foundWarnings);
-
-      // 3. Analyser la configuration auth
-      console.log('🔍 Analyse de la configuration auth...');
       await analyzeAuthConfig(foundWarnings);
-
-      // 4. Analyser les performances
-      console.log('🔍 Analyse des performances...');
       await analyzePerformance(foundWarnings);
-
-      // 5. Analyser le stockage
-      console.log('🔍 Analyse du stockage...');
       await analyzeStorage(foundWarnings);
 
       setWarnings(foundWarnings);
