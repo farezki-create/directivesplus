@@ -107,8 +107,6 @@ export const useSynthesisData = (userId?: string) => {
       }
       
       setResponses(allResponses);
-      console.log("Réponses au questionnaire récupérées:", allResponses);
-      
     } catch (error: any) {
       console.error("Erreur lors de la récupération des réponses:", error);
       throw error;
@@ -160,8 +158,6 @@ export const useSynthesisData = (userId?: string) => {
       })) : [];
       
       setTrustedPersons(formattedPersons);
-      console.log("Personnes de confiance récupérées:", formattedPersons);
-      
     } catch (error: any) {
       console.error("Erreur lors de la récupération des personnes de confiance:", error);
       throw error;
@@ -182,7 +178,6 @@ export const useSynthesisData = (userId?: string) => {
       
       if (data) {
         setFreeText(data.free_text || "");
-        console.log("Synthèse existante chargée:", data);
       }
       
     } catch (error: any) {

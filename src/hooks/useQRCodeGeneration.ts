@@ -42,29 +42,14 @@ export const useQRCodeGeneration = () => {
     setError(null);
 
     try {
-      console.log("QR Code generation - Input:", {
-        documentId,
-        documentName,
-        filePath,
-        currentOrigin: window.location.origin
-      });
-
       // Pour les directives institution, utiliser directement le filePath si disponible
       let qrCodeUrl: string;
       
       if (filePath && filePath.startsWith('http')) {
-        // Si on a un lien direct vers le PDF, l'utiliser
         qrCodeUrl = filePath;
       } else {
-        // Sinon, utiliser l'URL de visualisation directe
         qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
       }
-      
-      console.log("QR Code final:", {
-        qrCodeUrl,
-        urlLength: qrCodeUrl.length,
-        isValidLength: validateQRCodeData(qrCodeUrl)
-      });
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
       if (!validateQRCodeData(qrCodeUrl)) {

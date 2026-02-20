@@ -8,14 +8,9 @@ import { decryptData } from "@/utils/encryption";
  */
 export const decryptDossierContent = (content: string | any): any => {
   try {
-    // Check if the content is encrypted (base64 encoded)
     if (typeof content === 'string' && content.startsWith('U2F')) {
-      const decrypted = decryptData(content);
-      console.log("Données déchiffrées avec succès");
-      return decrypted;
+      return decryptData(content);
     } else {
-      // If data is not encrypted (backwards compatibility)
-      console.log("Données non chiffrées utilisées directement");
       return content;
     }
   } catch (error) {

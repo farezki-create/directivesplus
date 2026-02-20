@@ -62,7 +62,6 @@ export const checkAuthAttempt = (
 // Reset auth attempts after successful login
 export const resetAuthAttempts = (identifier: string, action: 'login' | 'access_code' | 'password_reset' = 'login') => {
   authAttempts.delete(identifier);
-  console.log(`Reset auth attempts for ${action}:`, identifier);
 };
 
 // Token integrity validation

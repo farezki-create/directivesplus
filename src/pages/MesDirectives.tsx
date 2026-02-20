@@ -39,18 +39,6 @@ const MesDirectives = () => {
 
   const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
 
-  console.log("MesDirectives - Auth state:", { 
-    userId: user?.id, 
-    hasProfile: !!profile, 
-    isAuthenticated, 
-    isLoading: authLoading,
-    accessType,
-    sharedCode,
-    qrUserId: userId,
-    hasInstitutionAccess,
-    documentsCount: documents.length,
-    storeDocumentsCount: storeDocuments.length
-  });
 
   if (sharedCode) {
     return (
@@ -86,24 +74,20 @@ const MesDirectives = () => {
   };
 
   const handleViewDocument = (filePath: string, fileType?: string) => {
-    console.log("MesDirectives - handleViewDocument appelé avec:", filePath, fileType);
     setPreviewDocument(filePath);
   };
 
   const handlePreviewDownload = (filePath: string) => {
     const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
-    console.log("MesDirectives - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);
   };
 
   const handlePreviewPrint = (filePath: string, fileType?: string) => {
-    console.log("MesDirectives - handlePreviewPrint:", filePath, fileType);
     handlePrint(filePath, fileType);
   };
 
   const handleDeleteDocument = async (document: Document) => {
-    console.log("MesDirectives - handleDeleteDocument appelé avec:", document);
     await handleDelete(document.id);
   };
 

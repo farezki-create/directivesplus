@@ -35,8 +35,7 @@ export default function AdminPage() {
 
   // Handle user detail view
   const handleViewUserDetails = (userId: string) => {
-    console.log(`View details for user: ${userId}`);
-    // You can implement navigation to user details page or modal here
+    // TODO: Implement navigation to user details page or modal here
   };
 
   // Only allow admins to see this page

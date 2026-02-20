@@ -28,11 +28,6 @@ const AccessCodePage = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  useEffect(() => {
-    console.log("📋 Page AccessCode chargée");
-    console.log("👤 Utilisateur connecté:", !!user);
-    console.log("🔐 Authentifié:", isAuthenticated);
-  }, [user, isAuthenticated]);
 
   if (isLoading) {
     return <LoadingState loading={true} message="Chargement en cours..." />;

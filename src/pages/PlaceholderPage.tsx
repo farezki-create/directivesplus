@@ -35,22 +35,16 @@ const PlaceholderPage = () => {
   const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isExamplesPage = pageId === 'exemples-phrases';
 
-  // Log for debugging
+  // Set toast flag for trusted persons page
   useEffect(() => {
-    console.log("Current pageId:", pageId);
-    console.log('Is trusted persons page:', isTrustedPersonsPage);
-    console.log('User ID available:', user?.id);
-    
-    // Only set the toast flag on mount or pageId change
     if (isTrustedPersonsPage) {
       setShouldShowToast(true);
     }
-  }, [pageId, isTrustedPersonsPage, user?.id]);
+  }, [pageId, isTrustedPersonsPage]);
 
-  // Show toast notification for the trusted persons page - separate effect to handle the flag
+  // Show toast notification for the trusted persons page
   useEffect(() => {
     if (shouldShowToast) {
-      console.log("Displaying toast for personne-confiance page");
       toast({
         title: "Page personne de confiance",
         description: "Vous pouvez ajouter vos personnes de confiance ici."

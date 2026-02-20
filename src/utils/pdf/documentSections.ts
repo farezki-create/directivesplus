@@ -108,13 +108,7 @@ export const renderTrustedPersons = (pdf: jsPDF, layout: PdfLayout, yPosition: n
 };
 
 export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: number, responses: Record<string, any>, translateResponse: (response: string) => string): number => {
-  console.log("=== DÉBUT RENDU QUESTIONNAIRES DANS PDF ===");
-  console.log("Données des réponses reçues:", responses);
-  console.log("Type des réponses:", typeof responses);
-  console.log("Clés des réponses:", Object.keys(responses || {}));
-  
   if (!responses || Object.keys(responses).length === 0) {
-    console.log("Aucune réponse aux questionnaires trouvée");
     return yPosition;
   }
   
@@ -144,11 +138,8 @@ export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: n
   
   // Parcourir chaque type de questionnaire
   Object.entries(responses).forEach(([questionnaireType, questions]) => {
-    console.log(`Traitement du questionnaire: ${questionnaireType}`, questions);
-    
     // Vérifier si nous avons des questions pour ce type
     if (!questions || typeof questions !== 'object' || Object.keys(questions).length === 0) {
-      console.log(`Aucune question trouvée pour ${questionnaireType}`);
       return;
     }
     
@@ -162,8 +153,6 @@ export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: n
     
     // Parcourir chaque question
     Object.entries(questions).forEach(([questionId, questionData]: [string, any]) => {
-      console.log(`Question ${questionId}:`, questionData);
-      
       // Vérifier s'il faut une nouvelle page
       yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 3);
       
@@ -186,7 +175,6 @@ export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: n
     yPosition += layout.lineHeight; // Espacement entre les questionnaires
   });
   
-  console.log("=== FIN RENDU QUESTIONNAIRES DANS PDF ===");
   return yPosition + layout.lineHeight;
 };
 

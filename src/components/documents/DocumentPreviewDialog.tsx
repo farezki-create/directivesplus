@@ -25,18 +25,15 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
   onPrint,
   showPrint = true
 }) => {
-  console.log("DocumentPreviewDialog - rendu avec filePath:", filePath);
   const isOpen = !!filePath;
   
   const handleDownload = () => {
-    console.log("DocumentPreviewDialog - handleDownload appelé");
     if (filePath && onDownload) {
       onDownload(filePath);
     }
   };
   
   const handlePrint = () => {
-    console.log("DocumentPreviewDialog - handlePrint appelé");
     if (filePath && onPrint) {
       onPrint(filePath);
     }
@@ -44,7 +41,6 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
   
   const handleOpenExternal = () => {
     if (filePath) {
-      console.log("DocumentPreviewDialog - Ouverture externe de:", filePath);
       window.open(filePath, '_blank');
     }
   };

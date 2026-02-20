@@ -39,11 +39,6 @@ const DirectivesDocs = () => {
     handleUploadComplete,
   } = useDirectivesDocuments();
 
-  console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
-  console.log("DirectivesDocs - Dossier actif:", dossierActif);
-  console.log("DirectivesDocs - URL params:", urlParams);
-  console.log("DirectivesDocs - Institution access:", institutionAccess);
-
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
   const handleUploadCompleteWrapper = () => {
@@ -51,24 +46,20 @@ const DirectivesDocs = () => {
   };
 
   const handleViewDocument = (filePath: string, fileType?: string) => {
-    console.log("DirectivesDocs - handleViewDocument appelé avec:", filePath, fileType);
     setPreviewDocument(filePath);
   };
 
   const handlePreviewDownload = (filePath: string) => {
     const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
-    console.log("DirectivesDocs - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);
   };
 
   const handlePreviewPrint = (filePath: string, fileType?: string) => {
-    console.log("DirectivesDocs - handlePreviewPrint:", filePath, fileType);
     handlePrint(filePath, fileType);
   };
 
   const handleDeleteDocument = async (document: Document) => {
-    console.log("DirectivesDocs - handleDeleteDocument appelé avec:", document);
     await handleDelete(document.id);
   };
 

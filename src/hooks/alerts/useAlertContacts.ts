@@ -17,8 +17,6 @@ export const useAlertContacts = (userId?: string) => {
 
     try {
       setLoading(true);
-      console.log("Fetching alert contacts for user:", userId);
-      
       const { data, error } = await supabase
         .from('patient_alert_contacts')
         .select('*')
@@ -34,7 +32,6 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
-      console.log("Alert contacts loaded:", data);
       setAlertContacts(data || []);
     } catch (error) {
       console.error('Error fetching alert contacts:', error);
@@ -84,9 +81,7 @@ export const useAlertContacts = (userId?: string) => {
 
     try {
       setSaving(true);
-      console.log("Saving alert contacts for user:", userId);
-      
-      const validContacts = alertContacts.filter(contact => 
+      const validContacts = alertContacts.filter(contact =>
         contact.contact_type && 
         contact.contact_name && 
         (contact.phone_number || contact.email)
@@ -141,7 +136,6 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
-      console.log("Alert contacts saved successfully");
       toast({
         title: "Contacts sauvegardés",
         description: "Vos contacts d'alerte ont été enregistrés avec succès.",

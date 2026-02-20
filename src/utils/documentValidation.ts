@@ -6,18 +6,11 @@ import { Document, isDocument } from "@/types/documents";
  */
 export const validateDocuments = (documents: any[]): Document[] => {
   if (!Array.isArray(documents)) {
-    console.warn("validateDocuments: Input is not an array");
     return [];
   }
 
   return documents
-    .filter(doc => {
-      if (!isDocument(doc)) {
-        console.warn("validateDocuments: Invalid document found:", doc);
-        return false;
-      }
-      return true;
-    })
+    .filter(doc => isDocument(doc))
     .map(doc => ({
       ...doc,
       file_type: doc.file_type || doc.content_type || 'application/pdf',

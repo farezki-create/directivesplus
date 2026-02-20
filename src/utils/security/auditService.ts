@@ -32,8 +32,6 @@ class AuditService {
         session_id: event.session_id || this.getSessionId()
       };
 
-      console.log('AUDIT LOG:', auditRecord);
-
       // En production, ceci serait envoyé vers une table d'audit sécurisée
       const { error } = await supabase
         .from('access_logs')
