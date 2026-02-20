@@ -19,7 +19,7 @@ export const retryWithBackoff = async (apiFn: () => Promise<any>, maxRetries = 3
       }
       // Exponential backoff
       const delay = Math.pow(2, retries) * 500 + Math.floor(Math.random() * 500);
-      console.log(`Retry ${retries} after ${delay}ms`);
+      // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

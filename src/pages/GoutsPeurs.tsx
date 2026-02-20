@@ -4,7 +4,6 @@ import QuestionnaireSection from "@/components/QuestionnaireSection";
 import BackButton from "@/components/ui/back-button";
 
 const GoutsPeurs = () => {
-  console.log("Rendering GoutsPeurs page");
   return (
     <QuestionnaireLayout title="Goûts et Peurs">
       <BackButton />

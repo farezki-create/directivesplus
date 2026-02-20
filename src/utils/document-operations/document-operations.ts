@@ -6,8 +6,6 @@ import { toast } from "@/hooks/use-toast";
  */
 export const viewDocument = async (filePath: string, contentType?: string) => {
   try {
-    console.log("viewDocument appelé avec:", filePath, contentType);
-    
     if (!filePath) {
       throw new Error("Chemin de fichier invalide");
     }
@@ -62,8 +60,6 @@ export const viewDocument = async (filePath: string, contentType?: string) => {
  */
 export const downloadDocument = async (filePath: string, fileName: string) => {
   try {
-    console.log("downloadDocument appelé avec:", filePath, fileName);
-    
     if (!filePath) {
       throw new Error("Chemin de fichier invalide");
     }
@@ -135,8 +131,6 @@ export const downloadDocument = async (filePath: string, fileName: string) => {
  */
 export const printDocument = async (filePath: string, contentType?: string) => {
   try {
-    console.log("printDocument appelé avec:", filePath, contentType);
-    
     if (!filePath) {
       throw new Error("Chemin de fichier invalide");
     }
@@ -209,7 +203,6 @@ export const printDocument = async (filePath: string, contentType?: string) => {
  */
 export const shareDocument = async (documentId: string) => {
   // Cette fonction sera implémentée avec le système de partage unifié
-  console.log('Partage du document:', documentId);
   toast({
     title: "Fonctionnalité à venir",
     description: "Le partage sera bientôt disponible",

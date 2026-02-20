@@ -40,8 +40,6 @@ const Index = () => {
   const handleSecurityAudit = async () => {
     setAuditInProgress(true);
     try {
-      console.log("🔍 Démarrage de l'audit de sécurité complet...");
-      
       const auditReport = await auditManager.runFullAudit();
       setAuditResults(auditReport);
       

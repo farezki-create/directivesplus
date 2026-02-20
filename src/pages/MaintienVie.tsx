@@ -4,7 +4,6 @@ import QuestionnaireSection from "@/components/QuestionnaireSection";
 import BackButton from "@/components/ui/back-button";
 
 const MaintienVie = () => {
-  console.log("Rendering MaintienVie page");
   return (
     <QuestionnaireLayout title="Maintien en Vie">
       <BackButton />

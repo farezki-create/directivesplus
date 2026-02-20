@@ -14,9 +14,6 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     // Create PDF using the builder
     const pdf = buildPDF(data);
     
-    console.log("=== GÉNÉRATION PDF TERMINÉE ===");
-    console.log("Nombre total de pages:", pdf.getNumberOfPages());
-    
     // Generate PDF output
     const pdfOutput = pdf.output("datauristring");
     

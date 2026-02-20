@@ -37,16 +37,13 @@ export const useDocumentTransfer = () => {
   const navigate = useNavigate();
 
   const updateStatus = (phase: TransferStatus['phase'], message: string, progress: number) => {
-    console.log(`Transfer status update: ${phase} - ${message} (${progress}%)`);
     setTransferStatus({ phase, message, progress });
   };
 
   const transferToMesDirectives = async (document: TransferDocument) => {
-    console.log("Starting transfer to Mes Directives");
     updateStatus('transferring', 'Transfert vers "Mes Directives" en cours...', 75);
     
     const currentUserId = user?.id || "anonymous";
-    console.log("Transfer user ID:", currentUserId);
     
     if (isAuthenticated && user) {
       try {
@@ -59,8 +56,6 @@ export const useDocumentTransfer = () => {
           external_id: `transferred-${document.id}`
         };
 
-        console.log("Saving document to Supabase:", documentData);
-        
         const { data, error } = await supabase
           .from('pdf_documents')
           .insert([documentData])
@@ -72,8 +67,6 @@ export const useDocumentTransfer = () => {
           throw error;
         }
 
-        console.log("Document sauvegardé avec succès dans Supabase:", data);
-        
         updateStatus('completed', 'Document transféré avec succès !', 100);
         return data;
         
@@ -95,7 +88,6 @@ export const useDocumentTransfer = () => {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log("Adding document to store:", transferredDocument.id);
       addDocument(transferredDocument);
       
       updateStatus('completed', 'Document transféré avec succès !', 100);
@@ -105,13 +97,8 @@ export const useDocumentTransfer = () => {
 
   const transferDocument = async (document: TransferDocument) => {
     if (isTransferring) {
-      console.log("Transfer already in progress, skipping");
       return;
     }
-    
-    console.log("Starting document transfer process for:", document.file_name || document.id);
-    console.log("Document details:", document);
-    console.log("User authenticated:", isAuthenticated);
     
     try {
       setIsTransferring(true);
@@ -124,7 +111,6 @@ export const useDocumentTransfer = () => {
       
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log("Transfer completed, redirecting to /mes-directives");
       navigate('/mes-directives');
       
       toast({

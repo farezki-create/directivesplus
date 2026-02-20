@@ -35,12 +35,10 @@ export const useOptimizedAccessCard = () => {
 
   // Optimisation des handlers avec useCallback
   const optimizedHandlePrint = useCallback(() => {
-    console.log("Optimized print handler called");
     handlePrint();
   }, [handlePrint]);
 
   const optimizedHandleDownload = useCallback(() => {
-    console.log("Optimized download handler called");
     handleDownload();
   }, [handleDownload]);
 

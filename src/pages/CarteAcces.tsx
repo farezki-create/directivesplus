@@ -24,24 +24,8 @@ const CarteAcces = () => {
     handleDownload
   } = useAccessCard();
 
-  console.log("CarteAcces - Enhanced render state:", {
-    isAuthenticated,
-    isLoading,
-    profile: profile ? {
-      firstName: profile.first_name,
-      lastName: profile.last_name,
-      birthDate: profile.birth_date
-    } : null,
-    codeAcces,
-    qrCodeUrl: qrCodeUrl?.substring(0, 50) + (qrCodeUrl?.length > 50 ? '...' : ''),
-    isGenerating,
-    isQrCodeValid,
-    currentLocation: window.location.href
-  });
-
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      console.log("CarteAcces - User not authenticated, redirecting");
       toast({
         title: "Accès refusé",
         description: "Vous devez être connecté pour accéder à cette page",
@@ -54,7 +38,6 @@ const CarteAcces = () => {
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
-    console.log("CarteAcces - Loading state");
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
@@ -63,7 +46,6 @@ const CarteAcces = () => {
   }
 
   if (!isAuthenticated) {
-    console.log("CarteAcces - Not authenticated, returning null");
     return null;
   }
 
@@ -71,17 +53,6 @@ const CarteAcces = () => {
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date ? new Date(profile.birth_date).toLocaleDateString('fr-FR') : "";
   const isProfileIncomplete = !firstName || !lastName || !birthDate;
-
-  console.log("CarteAcces - Final profile data:", {
-    firstName,
-    lastName,
-    birthDate,
-    profileComplete: !isProfileIncomplete,
-    qrCodeFinal: qrCodeUrl,
-    qrCodeLength: qrCodeUrl?.length || 0,
-    isGenerating,
-    isQrCodeValid
-  });
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

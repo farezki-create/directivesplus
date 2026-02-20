@@ -33,8 +33,6 @@ class ComplianceChecker {
    * Lance un audit complet de conformité
    */
   async runComplianceAudit(): Promise<ComplianceReport> {
-    console.log("🔍 Démarrage de l'audit de conformité...");
-    
     this.checks = [];
     
     // Tests d'authentification

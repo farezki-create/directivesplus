@@ -15,7 +15,6 @@ export class StrictRLSManager {
       
       const isAdmin = user.email.endsWith('@directivesplus.fr');
       
-      console.log('Admin check:', { email: user.email, isAdmin });
       return isAdmin;
     } catch (error) {
       console.error('Error checking admin status:', error);

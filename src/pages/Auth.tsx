@@ -26,7 +26,7 @@ const Auth = () => {
   }
 
   const handleAuthSuccess = () => {
-    console.log("Authentification réussie");
+    // Auth success handled by context
   };
 
   return (

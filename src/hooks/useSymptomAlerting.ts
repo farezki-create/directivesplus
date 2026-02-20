@@ -24,15 +24,12 @@ export const useSymptomAlerting = () => {
 
   const getGlobalAlertSettings = async (): Promise<GlobalAlertSettings> => {
     try {
-      console.log("🔧 Récupération des paramètres globaux d'alerte...");
-      
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'GET'
       });
 
       if (error) {
         console.error('Erreur lors de la récupération des paramètres globaux:', error);
-        // Utiliser les paramètres par défaut en cas d'erreur
         return {
           auto_alert_enabled: true,
           alert_threshold: 7,
@@ -40,14 +37,11 @@ export const useSymptomAlerting = () => {
         };
       }
 
-      const globalSettings = data?.settings || {
+      return data?.settings || {
         auto_alert_enabled: true,
         alert_threshold: 7,
         symptom_types: ['douleur', 'dyspnee', 'anxiete', 'fatigue', 'sommeil']
       };
-
-      console.log("✅ Paramètres globaux récupérés:", globalSettings);
-      return globalSettings;
 
     } catch (error) {
       console.error('Erreur lors de la récupération des paramètres globaux:', error);
@@ -69,19 +63,14 @@ export const useSymptomAlerting = () => {
     if (!user?.id) return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
 
     setAlerting(true);
-    console.log("🔍 Vérification des alertes pour:", { douleur, dyspnee, anxiete, fatigue, sommeil });
 
     try {
-      // Récupérer les paramètres globaux d'alerte
       const globalSettings = await getGlobalAlertSettings();
       
-      // Si les alertes automatiques sont désactivées globalement
       if (!globalSettings.auto_alert_enabled) {
-        console.log("⚠️ Alertes automatiques désactivées globalement");
         return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
       }
 
-      // Récupérer les paramètres spécifiques du patient (peuvent surcharger les globaux)
       const { data: patientSettings, error: settingsError } = await supabase
         .from('patient_alert_settings')
         .select('*')
@@ -92,7 +81,6 @@ export const useSymptomAlerting = () => {
         console.error('Erreur lors de la récupération des paramètres patient:', settingsError);
       }
 
-      // Fusionner les paramètres globaux et spécifiques au patient
       const effectiveSettings = patientSettings ? {
         auto_alert_enabled: patientSettings.auto_alert_enabled ?? globalSettings.auto_alert_enabled,
         alert_threshold: patientSettings.alert_threshold ?? globalSettings.alert_threshold,
@@ -111,15 +99,10 @@ export const useSymptomAlerting = () => {
         whatsapp_number: ''
       };
 
-      console.log("⚙️ Paramètres d'alerte effectifs:", effectiveSettings);
-      
-      // Si les alertes auto sont désactivées pour ce patient
       if (!effectiveSettings.auto_alert_enabled) {
-        console.log("⚠️ Alertes automatiques désactivées pour ce patient");
         return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
       }
       
-      // Vérifier quels symptômes dépassent le seuil (utilise les paramètres effectifs)
       const threshold = effectiveSettings.alert_threshold;
       const criticalSymptoms: string[] = [];
       
@@ -139,16 +122,10 @@ export const useSymptomAlerting = () => {
         criticalSymptoms.push(`Sommeil (${sommeil}/10)`);
       }
 
-      console.log("🚨 Symptômes critiques détectés:", criticalSymptoms);
-      console.log("📊 Seuil utilisé:", threshold);
-
-      // Si aucun symptôme critique
       if (criticalSymptoms.length === 0) {
-        console.log("✅ Aucun symptôme critique, pas d'alerte nécessaire");
         return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
       }
 
-      // Récupérer les contacts d'alerte
       const { data: contacts, error: contactsError } = await supabase
         .from('patient_alert_contacts')
         .select('*')
@@ -159,13 +136,7 @@ export const useSymptomAlerting = () => {
         console.error('Erreur lors de la récupération des contacts:', contactsError);
       }
 
-      console.log("👥 Contacts d'alerte trouvés:", contacts?.length || 0);
-
-      // Si le patient a des contacts
       if (contacts && contacts.length > 0) {
-        console.log("📧 Envoi d'alertes automatiques...");
-        
-        // Créer une alerte dans la table alertes
         const { error: alertError } = await supabase
           .from('alertes')
           .insert({
@@ -177,14 +148,9 @@ export const useSymptomAlerting = () => {
 
         if (alertError) {
           console.error('Erreur lors de la création de l\'alerte:', alertError);
-        } else {
-          console.log("✅ Alerte créée en base de données");
         }
 
-        // Envoyer les notifications via l'Edge Function
         try {
-          console.log("📱 Envoi des notifications SMS/Email...");
-          
           const alertData = {
             patient_id: user.id,
             critical_symptoms: criticalSymptoms,
@@ -192,14 +158,12 @@ export const useSymptomAlerting = () => {
             settings: effectiveSettings
           };
 
-          const { data: alertResponse, error: alertFunctionError } = await supabase.functions.invoke('send-symptom-alert', {
+          const { error: alertFunctionError } = await supabase.functions.invoke('send-symptom-alert', {
             body: alertData
           });
 
           if (alertFunctionError) {
             console.error('Erreur Edge Function:', alertFunctionError);
-          } else {
-            console.log("✅ Notifications envoyées:", alertResponse);
           }
         } catch (functionError) {
           console.error('Erreur lors de l\'appel à l\'Edge Function:', functionError);
@@ -213,9 +177,6 @@ export const useSymptomAlerting = () => {
 
         return { shouldAlert: true, criticalSymptoms, redirectToAlerts: false };
       } else {
-        // Si pas de contacts, proposer la redirection
-        console.log("⚠️ Pas de contacts configurés");
-        
         toast({
           title: "⚠️ Symptômes critiques détectés",
           description: `Configurez vos contacts d'alerte pour notifier automatiquement vos proches (seuil: ${threshold})`,

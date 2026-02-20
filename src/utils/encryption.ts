@@ -116,7 +116,6 @@ export const decryptData = (encryptedDataString: string, asObject: boolean = tru
       try {
         return JSON.parse(decryptedString);
       } catch (e) {
-        console.warn("Les données déchiffrées ne sont pas un JSON valide, retour de la chaîne");
         return decryptedString;
       }
     }

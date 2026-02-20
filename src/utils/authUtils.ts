@@ -2,8 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const cleanupAuthState = () => {
-  console.log("🧹 Nettoyage de l'état d'authentification");
-  
   // Nettoyer localStorage
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
@@ -19,7 +17,7 @@ export const cleanupAuthState = () => {
       }
     });
   } catch (e) {
-    console.log("⚠️ SessionStorage non disponible");
+    // SessionStorage may not be available
   }
 };
 
@@ -28,6 +26,6 @@ export const performGlobalSignOut = async () => {
     cleanupAuthState();
     await supabase.auth.signOut({ scope: 'global' });
   } catch (error) {
-    console.log("⚠️ Erreur déconnexion:", error);
+    // Sign out error - state already cleaned
   }
 };

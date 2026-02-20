@@ -4,7 +4,6 @@ import QuestionnaireSection from "@/components/QuestionnaireSection";
 import BackButton from "@/components/ui/back-button";
 
 const MaladieAvancee = () => {
-  console.log("Rendering MaladieAvancee page");
   return (
     <QuestionnaireLayout title="Maladie Avancée">
       <BackButton />

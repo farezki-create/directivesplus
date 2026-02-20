@@ -13,9 +13,5 @@ export const logVerificationResult = (
   message: string, 
   data?: any
 ) => {
-  if (success) {
-    console.log("Vérification réussie:", data);
-  } else {
-    console.log("Échec de la vérification:", message);
-  }
+  // No-op in production - errors are handled by callers
 };
