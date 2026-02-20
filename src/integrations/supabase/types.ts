@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -2720,11 +2720,11 @@ export type Database = {
         Returns: string
       }
       generate_auth_code:
+        | { Args: never; Returns: undefined }
         | {
             Args: { p_channel: string; p_target: string; p_user_id?: string }
             Returns: string
           }
-        | { Args: never; Returns: undefined }
       generate_confirmation_code: {
         Args: { target_email: string }
         Returns: string
@@ -2732,8 +2732,8 @@ export type Database = {
       generate_institution_code: { Args: never; Returns: string }
       generate_patient_access_code: { Args: never; Returns: string }
       generate_random_code:
-        | { Args: { length: number }; Returns: string }
         | { Args: never; Returns: string }
+        | { Args: { length: number }; Returns: string }
       generate_shared_access_code: { Args: never; Returns: string }
       generate_symptom_access_code: { Args: never; Returns: string }
       generate_unique_access_code: { Args: never; Returns: string }
@@ -2920,8 +2920,8 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_user_admin:
-        | { Args: { user_id?: string }; Returns: boolean }
         | { Args: never; Returns: boolean }
+        | { Args: { user_id?: string }; Returns: boolean }
       log_admin_feedback_access: {
         Args: { p_feedback_id: string; p_feedback_user_id: string }
         Returns: undefined
@@ -2938,6 +2938,7 @@ export type Database = {
         Returns: undefined
       }
       log_security_event_enhanced:
+        | { Args: never; Returns: undefined }
         | {
             Args: {
               p_details?: Json
@@ -2951,7 +2952,6 @@ export type Database = {
             }
             Returns: string
           }
-        | { Args: never; Returns: undefined }
       log_security_event_secure: {
         Args: {
           p_details?: Json
@@ -3044,6 +3044,7 @@ export type Database = {
         }[]
       }
       validate_secure_document_access:
+        | { Args: never; Returns: undefined }
         | {
             Args: {
               p_access_code?: string
@@ -3058,7 +3059,6 @@ export type Database = {
               error_message: string
             }[]
           }
-        | { Args: never; Returns: undefined }
       validate_session_security: {
         Args: {
           p_browser_fingerprint?: string
@@ -3129,6 +3129,7 @@ export type Database = {
         }[]
       }
       verify_document_access:
+        | { Args: never; Returns: undefined }
         | {
             Args: {
               p_access_code: string
@@ -3141,7 +3142,6 @@ export type Database = {
               is_full_access: boolean
             }[]
           }
-        | { Args: never; Returns: undefined }
       verify_institution_access: {
         Args: {
           input_birth_date: string
