@@ -17,7 +17,6 @@ export const InstitutionAccessForm: React.FC = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // Utiliser le hook d'accès institution avec le nouveau paramètre professionalId
   const institutionAccess = useInstitutionCodeAccess(
     submitted ? formData.accessCode : null,
     submitted ? formData.lastName : null,
@@ -29,12 +28,9 @@ export const InstitutionAccessForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(`Changement dans le champ ${name}:`, value);
     
-    // Pour le champ professionalId, ne garder que les chiffres
     if (name === 'professionalId') {
       const numericValue = value.replace(/[^0-9]/g, '');
-      console.log(`Valeur numérique filtrée pour ${name}:`, numericValue);
       setFormData(prev => ({ ...prev, [name]: numericValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -47,14 +43,12 @@ export const InstitutionAccessForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Soumission du formulaire avec les données:", formData);
     setSubmitted(true);
   };
 
   const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.accessCode && formData.professionalId;
   const isLoading = submitted && institutionAccess.loading;
 
-  // Si l'accès est accordé, afficher le message de succès
   if (institutionAccess.accessGranted) {
     return (
       <div className="space-y-6">
@@ -94,93 +88,34 @@ export const InstitutionAccessForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="lastName">Nom de famille du patient</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            placeholder="NOM"
-            required
-            disabled={isLoading}
-            autoComplete="family-name"
-          />
+          <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="NOM" required disabled={isLoading} autoComplete="family-name" />
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="firstName">Prénom du patient</Label>
-          <Input
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            placeholder="Prénom"
-            required
-            disabled={isLoading}
-            autoComplete="given-name"
-          />
+          <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Prénom" required disabled={isLoading} autoComplete="given-name" />
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="birthDate">Date de naissance</Label>
-          <Input
-            id="birthDate"
-            name="birthDate"
-            type="date"
-            value={formData.birthDate}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            autoComplete="bday"
-          />
+          <Input id="birthDate" name="birthDate" type="date" value={formData.birthDate} onChange={handleChange} required disabled={isLoading} autoComplete="bday" />
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="professionalId">Numéro d'identification professionnel</Label>
-          <Input
-            id="professionalId"
-            name="professionalId"
-            value={formData.professionalId}
-            onChange={handleChange}
-            placeholder="Saisissez uniquement des chiffres"
-            required
-            disabled={isLoading}
-            maxLength={11}
-            autoComplete="off"
-          />
-          <p className="text-xs text-gray-500">
-            RPPS: 11 chiffres | ADELI/FINESS: 9 chiffres (exemple: 12345678901)
-          </p>
+          <Input id="professionalId" name="professionalId" value={formData.professionalId} onChange={handleChange} placeholder="Saisissez uniquement des chiffres" required disabled={isLoading} maxLength={11} autoComplete="off" />
+          <p className="text-xs text-gray-500">RPPS: 11 chiffres | ADELI/FINESS: 9 chiffres (exemple: 12345678901)</p>
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="accessCode">Code d'accès partagé</Label>
-          <Input
-            id="accessCode"
-            name="accessCode"
-            type="text"
-            value={formData.accessCode}
-            onChange={handleChange}
-            placeholder="Code généré par le patient"
-            required
-            disabled={isLoading}
-            autoComplete="off"
-          />
+          <Input id="accessCode" name="accessCode" type="text" value={formData.accessCode} onChange={handleChange} placeholder="Code généré par le patient" required disabled={isLoading} autoComplete="off" />
         </div>
 
         {institutionAccess.error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {institutionAccess.error}
-            </AlertDescription>
+            <AlertDescription>{institutionAccess.error}</AlertDescription>
           </Alert>
         )}
 
-        <Button 
-          type="submit" 
-          className="w-full"
-          disabled={!isFormValid || isLoading}
-        >
+        <Button type="submit" className="w-full" disabled={!isFormValid || isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

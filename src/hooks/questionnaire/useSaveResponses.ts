@@ -85,8 +85,7 @@ export const useSaveResponses = () => {
         }
       });
       
-      // Debug info
-      console.log("Responses to save:", responsesToSave);
+      
       
       // Ensure all question_id values are UUIDs for questionnaire_responses table
       if (responseTable === 'questionnaire_responses') {

@@ -52,7 +52,7 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
       }
     } as React.ChangeEvent<HTMLInputElement>;
     
-    console.log("Événement synthétique créé avec nom:", syntheticEvent.target.name, "et valeur:", syntheticEvent.target.value);
+    
     
     // Appeler le onChange parent avec l'événement corrigé
     onChange(syntheticEvent);

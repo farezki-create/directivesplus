@@ -14,14 +14,12 @@ import { useState } from "react";
 export const useDocumentOperations = (refreshDocuments: () => void) => {
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Document viewing and preview operations
   const { 
     previewDocument, 
     setPreviewDocument, 
     handleView: originalHandleView
   } = useDocumentViewer();
   
-  // Document deletion operations
   const { 
     documentToDelete, 
     setDocumentToDelete, 
@@ -32,19 +30,15 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     tableName: "pdf_documents" 
   });
   
-  // Other document operations with enhanced error handling
   const { handleDownload: originalHandleDownload } = useDocumentDownload();
   const { handlePrint: originalHandlePrint } = useDocumentPrint();
   
-  // Wrapper for download with improved parameter handling
   const handleDownload = async (filePathOrDocument: any, fileName?: string) => {
-    console.log("useDocumentOperations - handleDownload called with:", filePathOrDocument, fileName);
     setIsProcessing(true);
     try {
       let filePath: string;
       let finalFileName: string;
       
-      // Handle both document objects and direct file paths
       if (typeof filePathOrDocument === 'string') {
         filePath = filePathOrDocument;
         finalFileName = fileName || 'document.pdf';
@@ -53,7 +47,6 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         finalFileName = fileName || filePathOrDocument?.file_name || 'document.pdf';
       }
       
-      console.log("useDocumentOperations - Processing download:", filePath, finalFileName);
       await originalHandleDownload(filePath, finalFileName);
     } catch (error) {
       console.error("useDocumentOperations - Download error:", error);
@@ -70,15 +63,12 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     }
   };
   
-  // Wrapper for print with improved parameter handling
   const handlePrint = async (filePathOrDocument: any, contentType?: string) => {
-    console.log("useDocumentOperations - handlePrint called with:", filePathOrDocument, contentType);
     setIsProcessing(true);
     try {
       let filePath: string;
       let fileType: string;
       
-      // Handle both document objects and direct file paths
       if (typeof filePathOrDocument === 'string') {
         filePath = filePathOrDocument;
         fileType = contentType || 'application/pdf';
@@ -87,7 +77,6 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         fileType = contentType || filePathOrDocument?.content_type || filePathOrDocument?.file_type || 'application/pdf';
       }
       
-      console.log("useDocumentOperations - Processing print:", filePath, fileType);
       await originalHandlePrint(filePath, fileType);
     } catch (error) {
       console.error("useDocumentOperations - Print error:", error);
@@ -104,15 +93,12 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     }
   };
   
-  // Enhanced view with improved parameter handling
   const handleView = async (filePathOrDocument: any, contentType?: string) => {
-    console.log("useDocumentOperations - handleView called with:", filePathOrDocument, contentType);
     setIsProcessing(true);
     try {
       let filePath: string;
       let fileType: string;
       
-      // Handle both document objects and direct file paths
       if (typeof filePathOrDocument === 'string') {
         filePath = filePathOrDocument;
         fileType = contentType || 'application/pdf';
@@ -121,10 +107,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         fileType = contentType || filePathOrDocument?.content_type || filePathOrDocument?.file_type || 'application/pdf';
       }
       
-      console.log("useDocumentOperations - Setting preview document:", filePath);
       setPreviewDocument(filePath);
-      
-      console.log("useDocumentOperations - Processing view:", filePath, fileType);
       await originalHandleView(filePath, fileType);
     } catch (error) {
       console.error("useDocumentOperations - View error:", error);
@@ -141,28 +124,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     }
   };
   
-  console.log("useDocumentOperations - état actuel:", { 
-    previewDocument, 
-    documentToDelete,
-    isProcessing
-  });
-  
-  // Return a unified API for all document operations
   return {
-    // Processing state
     isProcessing,
-    
-    // Preview operations
     previewDocument,
     setPreviewDocument,
-    
-    // Deletion operations
     documentToDelete,
     setDocumentToDelete,
     confirmDelete,
     handleDelete,
-    
-    // Other document operations with enhanced error handling
     handleDownload,
     handlePrint,
     handleView

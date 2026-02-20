@@ -161,33 +161,23 @@ const SupabaseOptimizationPanel = () => {
   };
 
   const optimizeIndexes = async () => {
-    // Simulation - En production, cela nécessiterait des migrations SQL
     await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Index optimization completed');
   };
 
   const setupAuthLimits = async () => {
-    // Simulation - Configuration des limites d'authentification
     await new Promise(resolve => setTimeout(resolve, 3000));
-    console.log('Auth limits configured');
   };
 
   const compressStorage = async () => {
-    // Simulation - Compression des fichiers
     await new Promise(resolve => setTimeout(resolve, 5000));
-    console.log('Storage optimization completed');
   };
 
   const auditPolicies = async () => {
-    // Simulation - Audit des politiques RLS
     await new Promise(resolve => setTimeout(resolve, 4000));
-    console.log('RLS policies audited');
   };
 
   const setupMonitoring = async () => {
-    // Simulation - Configuration du monitoring
     await new Promise(resolve => setTimeout(resolve, 6000));
-    console.log('Monitoring setup completed');
   };
 
   const runAllOptimizations = async () => {

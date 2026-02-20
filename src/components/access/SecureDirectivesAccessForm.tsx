@@ -31,8 +31,6 @@ const SecureDirectivesAccessForm: React.FC = () => {
     setError(null);
     
     try {
-      // Logique simplifiée pour l'instant
-      console.log("Accès sécurisé demandé pour:", formData);
       // TODO: Implémenter la vérification sécurisée
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue");
@@ -69,59 +67,21 @@ const SecureDirectivesAccessForm: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">Prénom</Label>
-            <Input
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              disabled={isLoading}
-            />
+            <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={isLoading} />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="lastName">Nom</Label>
-            <Input
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              disabled={isLoading}
-            />
+            <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required disabled={isLoading} />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="birthDate">Date de naissance</Label>
-            <Input
-              id="birthDate"
-              name="birthDate"
-              type="date"
-              value={formData.birthDate}
-              onChange={handleChange}
-              required
-              disabled={isLoading}
-            />
+            <Input id="birthDate" name="birthDate" type="date" value={formData.birthDate} onChange={handleChange} required disabled={isLoading} />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="accessCode">Code d'accès sécurisé</Label>
-            <Input
-              id="accessCode"
-              name="accessCode"
-              value={formData.accessCode}
-              onChange={handleChange}
-              placeholder="Code d'accès"
-              required
-              disabled={isLoading}
-            />
+            <Input id="accessCode" name="accessCode" value={formData.accessCode} onChange={handleChange} placeholder="Code d'accès" required disabled={isLoading} />
           </div>
-
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={!isFormValid || isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={!isFormValid || isLoading}>
             {isLoading ? "Vérification sécurisée..." : "Accès sécurisé"}
           </Button>
         </form>

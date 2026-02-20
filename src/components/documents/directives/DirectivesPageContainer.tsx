@@ -35,9 +35,6 @@ interface DirectivesPageContainerProps {
   };
 }
 
-/**
- * Container component that handles the overall structure of the directives page
- */
 const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
   documents,
   showAddOptions,
@@ -55,13 +52,7 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDeleteAllDocuments = async () => {
-    console.log("=== DÉBUT SUPPRESSION DE TOUS LES DOCUMENTS ===");
-    console.log("UserId:", userId);
-    console.log("Nombre de documents à supprimer:", documents.length);
-    console.log("Liste des documents:", documents);
-
     if (!userId || documents.length === 0) {
-      console.log("Aucun utilisateur ou aucun document à supprimer");
       setShowDeleteAllDialog(false);
       return;
     }
@@ -69,30 +60,22 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
     setIsDeleting(true);
 
     try {
-      // Supprimer tous les documents PDF de l'utilisateur
-      console.log("Tentative de suppression des documents PDF...");
       const { data: deletedPdfDocs, error: pdfError } = await supabase
         .from('pdf_documents')
         .delete()
         .eq('user_id', userId)
         .select();
 
-      console.log("Résultat suppression PDF:", { deletedPdfDocs, pdfError });
-
       if (pdfError) {
         console.error("Erreur lors de la suppression des documents PDF:", pdfError);
         throw pdfError;
       }
 
-      // Supprimer tous les documents des directives de l'utilisateur
-      console.log("Tentative de suppression des directives...");
       const { data: deletedDirectives, error: directivesError } = await supabase
         .from('directives')
         .delete()
         .eq('user_id', userId)
         .select();
-
-      console.log("Résultat suppression directives:", { deletedDirectives, directivesError });
 
       if (directivesError) {
         console.error("Erreur lors de la suppression des directives:", directivesError);
@@ -100,22 +83,16 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
       }
 
       const totalDeleted = (deletedPdfDocs?.length || 0) + (deletedDirectives?.length || 0);
-      console.log("Total des documents supprimés:", totalDeleted);
 
       toast({
         title: "Documents supprimés",
         description: `${totalDeleted} document${totalDeleted > 1 ? 's' : ''} supprimé${totalDeleted > 1 ? 's' : ''} avec succès`
       });
 
-      // Recharger la page pour actualiser la liste
-      console.log("Rechargement de la page...");
       window.location.reload();
       
     } catch (error) {
-      console.error("=== ERREUR LORS DE LA SUPPRESSION ===");
-      console.error("Détails de l'erreur:", error);
-      console.error("Type d'erreur:", typeof error);
-      console.error("Message d'erreur:", error?.message);
+      console.error("Erreur lors de la suppression:", error);
       
       toast({
         title: "Erreur",
@@ -125,7 +102,6 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
     } finally {
       setIsDeleting(false);
       setShowDeleteAllDialog(false);
-      console.log("=== FIN SUPPRESSION DE TOUS LES DOCUMENTS ===");
     }
   };
 

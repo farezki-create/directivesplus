@@ -8,7 +8,6 @@ export class DiagnosticService {
 
     try {
       // Test 1: Configuration Supabase
-      console.log("🔍 Test 1: Configuration Supabase");
       results.push({
         test: "Configuration Supabase",
         status: "✅ OK",
@@ -17,7 +16,6 @@ export class DiagnosticService {
       });
 
       // Test 2: Session actuelle
-      console.log("🔍 Test 2: Session actuelle");
       const { data: session, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         results.push({
@@ -36,7 +34,6 @@ export class DiagnosticService {
       }
 
       // Test 3: Nettoyage session
-      console.log("🔍 Test 3: Nettoyage session");
       await supabase.auth.signOut({ scope: 'global' });
       results.push({
         test: "Nettoyage session",
@@ -46,7 +43,6 @@ export class DiagnosticService {
       });
 
       // Test 4: Test envoi OTP
-      console.log("🔍 Test 4: Test envoi OTP");
       const startTime = Date.now();
       const { data: otpData, error: otpError } = await supabase.auth.signInWithOtp({
         email: testEmail,
@@ -77,10 +73,8 @@ export class DiagnosticService {
         });
       }
 
-      // Test 5: Vérification utilisateur créé/existant (simplifié)
-      console.log("🔍 Test 5: Vérification utilisateur");
+      // Test 5: Vérification utilisateur
       try {
-        // Tentative de vérification sans les droits admin
         results.push({
           test: "Vérification utilisateur",
           status: "ℹ️ INFO",

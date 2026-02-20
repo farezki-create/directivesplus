@@ -22,18 +22,13 @@ const DirectivesAccess = () => {
       
       try {
         setIsLoading(true);
-        console.log("Loading directives for authenticated user:", user.id);
-        
         const authResult = await getAuthUserDossier(user.id, "directive");
         
         if (authResult.success) {
           if (authResult.dossier?.contenu?.documents) {
             setDocuments(authResult.dossier.contenu.documents);
           }
-          toast({
-            title: "Accès autorisé",
-            description: "Vos directives ont été chargées avec succès",
-          });
+          toast({ title: "Accès autorisé", description: "Vos directives ont été chargées avec succès" });
           navigate("/mes-directives", { replace: true });
         } else {
           console.error("Failed to load user directives:", authResult.error);
@@ -44,60 +39,38 @@ const DirectivesAccess = () => {
         setIsLoading(false);
       }
     };
-    
     loadUserDirectives();
   }, [isAuthenticated, user, navigate, setDocuments]);
   
   const handleAccessDirectives = async (accessCode: string, formData: any) => {
     try {
-      console.log("Vérification du code d'accès aux directives:", accessCode);
-      
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       const bruteForceIdentifier = `directives_access_${formData.firstName}_${formData.lastName}_${formData.birthDate}`;
       
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          accessCode: accessCode,
-          patientName: `${formData.firstName} ${formData.lastName}`,
-          patientBirthDate: formData.birthDate,
-          bruteForceIdentifier: bruteForceIdentifier
+          accessCode, patientName: `${formData.firstName} ${formData.lastName}`,
+          patientBirthDate: formData.birthDate, bruteForceIdentifier
         })
       });
       
       const result = await response.json();
       
       if (result.success) {
-        console.log("Code d'accès aux directives valide, dossier récupéré:", result);
-        
         if (result.dossier?.contenu?.documents) {
           setDocuments(result.dossier.contenu.documents);
         }
-        
         navigate("/mes-directives", { replace: true });
-        
-        toast({
-          title: "Accès autorisé",
-          description: "Vous avez accès aux directives anticipées",
-        });
+        toast({ title: "Accès autorisé", description: "Vous avez accès aux directives anticipées" });
       } else {
         console.error("Code d'accès invalide:", result.error);
-        toast({
-          title: "Accès refusé",
-          description: result.error || "Code d'accès invalide ou données incorrectes",
-          variant: "destructive"
-        });
+        toast({ title: "Accès refusé", description: result.error || "Code d'accès invalide ou données incorrectes", variant: "destructive" });
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification du code d'accès aux directives:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la vérification du code d'accès",
-        variant: "destructive"
-      });
+      console.error("Erreur lors de la vérification du code d'accès:", error);
+      toast({ title: "Erreur", description: "Une erreur est survenue lors de la vérification du code d'accès", variant: "destructive" });
     }
   };
   
@@ -107,9 +80,7 @@ const DirectivesAccess = () => {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
-            <h1 className="text-2xl font-bold text-center mb-6 text-directiveplus-700">
-              Chargement de vos directives...
-            </h1>
+            <h1 className="text-2xl font-bold text-center mb-6 text-directiveplus-700">Chargement de vos directives...</h1>
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
             </div>
@@ -132,7 +103,6 @@ const DirectivesAccess = () => {
             </AlertDescription>
           </Alert>
         )}
-        
         <DirectivesAccessForm onSubmit={handleAccessDirectives} />
       </main>
     </div>
