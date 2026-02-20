@@ -13,9 +13,11 @@ export default function CriticalSymptomWarning({ hasCriticalSymptoms }: Critical
       <div className="flex items-start gap-2">
         <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
         <div>
-          <h4 className="font-medium text-red-800">Symptômes critiques détectés</h4>
+          <h4 className="font-medium text-red-800">Auto-évaluation élevée détectée</h4>
           <p className="text-sm text-red-700">
-            Des évaluations élevées seront signalées à vos contacts d'alerte après l'enregistrement.
+            Vos évaluations élevées seront transmises à vos contacts d'alerte après l'enregistrement, 
+            afin de faciliter la communication avec votre équipe soignante. 
+            Ceci ne constitue pas un diagnostic médical.
           </p>
         </div>
       </div>
