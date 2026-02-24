@@ -2930,6 +2930,30 @@ export type Database = {
         Args: { p_feedback_id: string; p_feedback_user_id: string }
         Returns: undefined
       }
+      log_institution_access: {
+        Args: {
+          p_action: string
+          p_details: Json
+          p_institution_id: string
+          p_user_id: string
+        }
+        Returns: {
+          access_type: string | null
+          accessed_at: string | null
+          id: string
+          institution_code_id: string
+          institution_name: string | null
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "institution_access_logs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       log_security_event: {
         Args: {
           _details?: Json
