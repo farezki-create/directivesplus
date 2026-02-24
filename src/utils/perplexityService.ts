@@ -1,26 +1,15 @@
 
 // Utility for interacting with the Perplexity API
 
-// Store API key for reuse
+// Store API key in memory only — never persist to storage
 let perplexityApiKey: string | null = null;
 
 export const setPerplexityApiKey = (apiKey: string) => {
   perplexityApiKey = apiKey;
-  // Store in session storage so it persists during the session
-  sessionStorage.setItem('perplexity_api_key', apiKey);
 };
 
 export const getPerplexityApiKey = (): string | null => {
-  if (perplexityApiKey) return perplexityApiKey;
-  
-  // Try to get from session storage
-  const storedKey = sessionStorage.getItem('perplexity_api_key');
-  if (storedKey) {
-    perplexityApiKey = storedKey;
-    return storedKey;
-  }
-  
-  return null;
+  return perplexityApiKey;
 };
 
 export interface ChatMessage {
