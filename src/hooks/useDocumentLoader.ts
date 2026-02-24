@@ -45,7 +45,8 @@ export const useDocumentLoader = (documentId: string | null) => {
         return;
       }
 
-      if (rpcError) {
+      // If RPC returned empty (access denied or not found), try direct query (RLS will enforce ownership)
+      if (!rpcError || (rpcDoc && rpcDoc.length === 0)) {
         const { data: directDoc, error: directError } = await supabase
           .from('pdf_documents')
           .select('*')
