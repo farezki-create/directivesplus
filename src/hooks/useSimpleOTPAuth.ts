@@ -38,10 +38,10 @@ export const useSimpleOTPAuth = () => {
         
         if (error.message.includes('rate limit') || error.status === 429) {
           errorMessage = "Trop de tentatives. Patientez 5 minutes avant de réessayer.";
-        } else if (error.message.includes('email')) {
-          errorMessage = "Problème avec l'adresse email. Vérifiez qu'elle est correcte.";
-        } else if (error.message.includes('smtp') || error.message.includes('mail')) {
-          errorMessage = "Problème de configuration email. Contactez l'administrateur.";
+        } else if (error.status === 500 || error.message.includes('sending') || error.message.includes('smtp') || error.message.includes('mail')) {
+          errorMessage = "Le serveur n'a pas pu envoyer l'email. Réessayez plus tard ou utilisez la connexion par mot de passe.";
+        } else if (error.message.includes('invalid') && error.message.includes('email')) {
+          errorMessage = "Adresse email invalide. Vérifiez qu'elle est correcte.";
         }
         
         toast({
