@@ -49,6 +49,7 @@ import AdminInstitutions from "./pages/AdminInstitutions";
 
 import AlertContactsPage from "./pages/AlertContactsPage";
 import AlertManagementPage from "./pages/AlertManagementPage";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/rediger" element={<Rediger />} />
                   <Route path="/directives" element={<Directives />} />
