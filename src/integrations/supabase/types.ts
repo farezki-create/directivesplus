@@ -2922,6 +2922,10 @@ export type Database = {
       is_user_admin:
         | { Args: never; Returns: boolean }
         | { Args: { user_id?: string }; Returns: boolean }
+      log_access: {
+        Args: { _action: string; _meta: Json; _user_id: string }
+        Returns: undefined
+      }
       log_admin_feedback_access: {
         Args: { p_feedback_id: string; p_feedback_user_id: string }
         Returns: undefined
