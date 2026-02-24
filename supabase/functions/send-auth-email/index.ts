@@ -15,9 +15,43 @@ serve(async (req) => {
   }
 
   try {
+    // Validate caller is authorized (service role or internal call)
+    const authHeader = req.headers.get('Authorization')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!authHeader || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    if (token !== supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { email, type, confirmation_url, recovery_url }: EmailRequest = await req.json()
-    
-    
+
+    // Validate required fields
+    if (!email || !type) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Email and type are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid email format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     let subject = ''
     let htmlContent = ''
@@ -46,11 +80,16 @@ serve(async (req) => {
         textContent = `Réinitialisez votre mot de passe : ${recovery_url}`
         break
 
-      default:
-        throw new Error(`Type d'email non supporté : ${type}`)
-    }
+      case 'verification_code':
+        subject = 'DirectivesPlus - Code de vérification'
+        break
 
-    
+      default:
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unsupported email type' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Email traité' }),
@@ -58,9 +97,9 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('❌ Erreur traitement email:', error)
+    console.error('Erreur traitement email:', error)
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: 'Internal server error' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
