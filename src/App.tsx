@@ -49,6 +49,7 @@ import AdminInstitutions from "./pages/AdminInstitutions";
 
 import AlertContactsPage from "./pages/AlertContactsPage";
 import AlertManagementPage from "./pages/AlertManagementPage";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
