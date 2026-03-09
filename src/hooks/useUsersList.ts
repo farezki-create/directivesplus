@@ -26,8 +26,6 @@ export const useUsersList = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      console.log("🔍 Fetching users from profiles table...");
-      
       // Fetch from profiles table only - accessible data
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
