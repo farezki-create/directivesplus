@@ -18,10 +18,7 @@ export const useProfileCreation = () => {
     setFormValues: (values: ProfileFormValues) => void
   ) => {
     try {
-      console.log("Creating profile from user metadata");
       const profileData = createProfileData(userId, user);
-      
-      console.log("New profile data:", profileData);
       
       const { error } = await supabase
         .from("profiles")
