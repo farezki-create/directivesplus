@@ -1,5 +1,5 @@
 
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
