@@ -26,8 +26,6 @@ export const useUsersList = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      console.log("🔍 Fetching users from profiles table...");
-      
       // Fetch from profiles table only - accessible data
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -38,8 +36,6 @@ export const useUsersList = () => {
         console.error("❌ Error fetching profiles:", profilesError);
         throw profilesError;
       }
-
-      console.log("✅ Profiles fetched successfully:", profiles?.length || 0);
 
       // Map the profiles data to our UserProfile interface
       const mappedUsers: UserProfile[] = (profiles || []).map((profile) => ({
@@ -59,7 +55,6 @@ export const useUsersList = () => {
         termsAccepted: false, // Can't determine without auth access
       }));
 
-      console.log("✅ Users mapped successfully:", mappedUsers.length);
       setUserProfiles(mappedUsers);
       return mappedUsers;
     } catch (error: any) {

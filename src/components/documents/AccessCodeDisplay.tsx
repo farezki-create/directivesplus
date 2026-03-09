@@ -1,5 +1,5 @@
 
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,6 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   birthDate,
   type
 }) => {
-  useEffect(() => {
-    console.log("AccessCodeDisplay rendered:", { 
-      type, 
-      accessCode,
-      firstName, 
-      lastName,
-      birthDate
-    });
-  }, [accessCode, firstName, lastName, birthDate, type]);
-
   const handleCopyCode = () => {
     if (!accessCode) {
       toast({
@@ -69,7 +59,6 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   };
 
   if (!accessCode) {
-    console.warn("AccessCodeDisplay - No access code provided!");
     return (
       <Card className="mb-8 bg-red-50 border-red-200">
         <CardContent className="pt-6">

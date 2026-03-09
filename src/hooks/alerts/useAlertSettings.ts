@@ -25,8 +25,6 @@ export const useAlertSettings = (userId?: string) => {
 
     try {
       setLoading(true);
-      console.log("Fetching alert settings for user:", userId);
-      
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'GET'
       });
@@ -42,7 +40,6 @@ export const useAlertSettings = (userId?: string) => {
       }
 
       if (data?.settings) {
-        console.log("Settings loaded:", data.settings);
         setSettings(data.settings);
       }
     } catch (error) {
@@ -69,9 +66,6 @@ export const useAlertSettings = (userId?: string) => {
 
     try {
       setSaving(true);
-      console.log("Saving alert settings for user:", userId);
-      console.log("Settings to save:", settings);
-
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'POST',
         body: { 
@@ -89,8 +83,6 @@ export const useAlertSettings = (userId?: string) => {
         return;
       }
 
-      console.log("Settings saved successfully");
-      
       toast({
         title: "Paramètres sauvegardés",
         description: data?.message || "Vos paramètres d'alerte ont été enregistrés avec succès.",

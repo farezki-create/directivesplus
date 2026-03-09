@@ -18,10 +18,7 @@ export const useProfileCreation = () => {
     setFormValues: (values: ProfileFormValues) => void
   ) => {
     try {
-      console.log("Creating profile from user metadata");
       const profileData = createProfileData(userId, user);
-      
-      console.log("New profile data:", profileData);
       
       const { error } = await supabase
         .from("profiles")
@@ -38,7 +35,7 @@ export const useProfileCreation = () => {
       
       const initialValues = transformProfileToFormValues(enrichedProfile, user.email || "");
       setFormValues(initialValues);
-      console.log("Profile created from metadata, form values set:", initialValues);
+      
       
       toast.success("Profil créé avec succès", {
         description: "Les informations de votre inscription ont été récupérées."
