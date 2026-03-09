@@ -20,8 +20,6 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   birthDate,
   type
 }) => {
-  const handleCopyCode
-
   const handleCopyCode = () => {
     if (!accessCode) {
       toast({
