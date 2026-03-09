@@ -37,8 +37,6 @@ export const useUsersList = () => {
         throw profilesError;
       }
 
-      console.log("✅ Profiles fetched successfully:", profiles?.length || 0);
-
       // Map the profiles data to our UserProfile interface
       const mappedUsers: UserProfile[] = (profiles || []).map((profile) => ({
         id: profile.id,
