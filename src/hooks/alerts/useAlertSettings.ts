@@ -66,9 +66,6 @@ export const useAlertSettings = (userId?: string) => {
 
     try {
       setSaving(true);
-      console.log("Saving alert settings for user:", userId);
-      console.log("Settings to save:", settings);
-
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'POST',
         body: { 
