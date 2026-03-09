@@ -25,8 +25,6 @@ export const useAlertSettings = (userId?: string) => {
 
     try {
       setLoading(true);
-      console.log("Fetching alert settings for user:", userId);
-      
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'GET'
       });
