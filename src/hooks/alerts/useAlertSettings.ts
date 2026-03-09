@@ -40,7 +40,6 @@ export const useAlertSettings = (userId?: string) => {
       }
 
       if (data?.settings) {
-        console.log("Settings loaded:", data.settings);
         setSettings(data.settings);
       }
     } catch (error) {
