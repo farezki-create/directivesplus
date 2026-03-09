@@ -55,7 +55,6 @@ export const useUsersList = () => {
         termsAccepted: false, // Can't determine without auth access
       }));
 
-      console.log("✅ Users mapped successfully:", mappedUsers.length);
       setUserProfiles(mappedUsers);
       return mappedUsers;
     } catch (error: any) {

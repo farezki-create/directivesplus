@@ -69,7 +69,6 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   };
 
   if (!accessCode) {
-    console.warn("AccessCodeDisplay - No access code provided!");
     return (
       <Card className="mb-8 bg-red-50 border-red-200">
         <CardContent className="pt-6">

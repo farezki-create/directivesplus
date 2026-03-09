@@ -83,8 +83,6 @@ export const useAlertSettings = (userId?: string) => {
         return;
       }
 
-      console.log("Settings saved successfully");
-      
       toast({
         title: "Paramètres sauvegardés",
         description: data?.message || "Vos paramètres d'alerte ont été enregistrés avec succès.",

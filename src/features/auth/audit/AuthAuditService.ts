@@ -46,8 +46,6 @@ export class AuthAuditService {
     const recommendations = this.generateRecommendations(issues);
     const securityLevel = this.determineSecurityLevel(score);
     
-    console.log(`✅ Audit terminé - Score: ${score}/100 - Niveau: ${securityLevel}`);
-    
     return {
       score,
       issues,
