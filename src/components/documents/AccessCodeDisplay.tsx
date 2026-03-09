@@ -20,15 +20,7 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   birthDate,
   type
 }) => {
-  useEffect(() => {
-    console.log("AccessCodeDisplay rendered:", { 
-      type, 
-      accessCode,
-      firstName, 
-      lastName,
-      birthDate
-    });
-  }, [accessCode, firstName, lastName, birthDate, type]);
+  const handleCopyCode
 
   const handleCopyCode = () => {
     if (!accessCode) {

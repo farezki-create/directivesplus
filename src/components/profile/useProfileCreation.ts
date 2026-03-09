@@ -35,7 +35,7 @@ export const useProfileCreation = () => {
       
       const initialValues = transformProfileToFormValues(enrichedProfile, user.email || "");
       setFormValues(initialValues);
-      console.log("Profile created from metadata, form values set:", initialValues);
+      
       
       toast.success("Profil créé avec succès", {
         description: "Les informations de votre inscription ont été récupérées."
