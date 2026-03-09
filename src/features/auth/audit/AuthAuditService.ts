@@ -19,8 +19,6 @@ export interface AuthAuditIssue {
 
 export class AuthAuditService {
   static async performCompleteAudit(): Promise<AuthAuditResult> {
-    console.log('🔍 Début de l\'audit de l\'authentification Supabase...');
-    
     const issues: AuthAuditIssue[] = [];
     
     // 1. Audit de la configuration Supabase
