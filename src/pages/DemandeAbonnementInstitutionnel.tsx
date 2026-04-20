@@ -95,7 +95,7 @@ Demande soumise le: ${new Date().toLocaleString()}
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-6">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                   alt="DirectivesPlus" 
                   className="h-24 w-auto"
@@ -161,7 +161,7 @@ Demande soumise le: ${new Date().toLocaleString()}
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                 alt="DirectivesPlus" 
                 className="h-24 w-auto"

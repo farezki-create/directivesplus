@@ -32,14 +32,14 @@ const EnSavoirPlus = () => {
           
           <div className="mb-8 space-y-6">
             <div className="flex justify-center">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/89dffdef-ec1c-4e83-a2a6-aec4cb3eb098.png" 
                 alt="Comment utiliser DirectivesPlus - Processus de création des directives anticipées" 
                 className="w-full max-w-3xl rounded-lg shadow-md" 
               />
             </div>
             <div className="flex justify-center">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/362aba50-e9d2-4f3d-a392-18650f79e34d.png" 
                 alt="Les étapes pour créer vos directives anticipées avec DirectivesPlus" 
                 className="w-full max-w-3xl rounded-lg shadow-md" 

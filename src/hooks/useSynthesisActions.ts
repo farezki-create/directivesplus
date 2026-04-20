@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { generatePDF } from "@/utils/pdfGenerator";
+// generatePDF is dynamically imported to keep jsPDF out of the main bundle
 import { saveDirectivesWithDualStorage } from "@/utils/directives/directivesStorage";
 import { useNavigate } from "react-router-dom";
 
@@ -46,6 +46,7 @@ export const useSynthesisActions = (userId?: string) => {
 
       let pdfOutput;
       try {
+        const { generatePDF } = await import("@/utils/pdfGenerator");
         pdfOutput = await generatePDF(pdfData);
       } catch (pdfError: any) {
         console.error("Erreur lors de la génération du PDF:", pdfError);

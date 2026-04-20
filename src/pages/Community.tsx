@@ -17,7 +17,7 @@ const Community = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="flex justify-center mb-6">
             <div className="bg-white/20 rounded-full p-4">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/19f27f8b-f7ef-4752-bd9c-a0def22bc959.png" 
                 alt="Communauté DirectivesPlus" 
                 className="h-16 w-16"

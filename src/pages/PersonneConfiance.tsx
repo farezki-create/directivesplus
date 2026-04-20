@@ -29,7 +29,7 @@ const PersonneConfiance = () => {
           <div className="container mx-auto px-4 text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-white/80 rounded-lg p-2">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
                   alt="DirectivesPlus" 
                   className="h-8 w-auto"

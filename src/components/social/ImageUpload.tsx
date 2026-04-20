@@ -14,7 +14,7 @@ const ImageUpload = ({ uploadedImage, onImageRemove }: ImageUploadProps) => {
       {/* Selected Image Preview */}
       {uploadedImage && (
         <div className="mt-3 relative inline-block">
-          <img 
+          <img loading="lazy" decoding="async" 
             src={uploadedImage} 
             alt="Aperçu" 
             className="max-w-xs max-h-32 rounded-lg object-cover border"

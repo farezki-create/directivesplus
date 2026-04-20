@@ -12,7 +12,7 @@ const DirectivesInfo = () => {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <div className="bg-directiveplus-50 rounded-full p-5 mb-6">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/lovable-uploads/41199219-9056-4e5f-bae3-17439ecbb194.png" 
                   alt="Simple et guidé" 
                   className="w-24 h-24 object-contain" 
@@ -31,7 +31,7 @@ const DirectivesInfo = () => {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <div className="bg-directiveplus-50 rounded-full p-5 mb-6">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
                   alt="Facilement partageable" 
                   className="w-24 h-24 object-contain" 

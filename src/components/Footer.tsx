@@ -14,7 +14,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
               <div className="p-3">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                   alt="DirectivesPlus" 
                   className="h-16 w-auto"

@@ -6,7 +6,7 @@ interface ImagePreviewProps {
 const ImagePreview = ({ filePath }: ImagePreviewProps) => {
   return (
     <div className="flex justify-center py-4">
-      <img 
+      <img loading="lazy" decoding="async" 
         src={filePath} 
         alt="Prévisualisation" 
         className="max-h-[70vh] object-contain" 
