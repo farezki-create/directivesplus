@@ -2,13 +2,10 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Users, 
-  Database, 
-  Shield, 
-  Activity, 
+import {
+  Users,
+  Shield,
   AlertTriangle,
-  Settings,
   BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,11 +15,7 @@ import { usePrefetchRoute } from "@/hooks/usePrefetch";
 // Static loader map — required for Vite to statically analyze dynamic imports
 const routeLoaders: Record<string, () => Promise<unknown>> = {
   "/admin/users": () => import("@/pages/AdminUsers"),
-  "/admin/security-audit": () => import("@/pages/AdminAuditUnified"),
-  "/admin/supabase-audit": () => import("@/pages/AdminAuditUnified"),
-  "/supabase-audit": () => import("@/pages/AdminAuditUnified"),
-  "/admin/monitoring": () => import("@/pages/AdminAuditUnified"),
-  "/admin/optimization": () => import("@/pages/AdminAuditUnified"),
+  "/admin/audit": () => import("@/pages/AdminAuditUnified"),
   "/admin/stats": () => import("@/pages/AdminStats"),
 };
 
