@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle, FileText } from "lucide-react";
@@ -15,15 +16,16 @@ interface SuccessViewProps {
 
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
   const { documents } = useDirectivesStore();
+  const navigate = useNavigate();
 
-  const firstPdfDocument = documents.find((item: any) => 
-    item.file_path && 
+  const firstPdfDocument = documents.find((item: any) =>
+    item.file_path &&
     (item.content_type === 'application/pdf' || item.file_name?.toLowerCase().endsWith('.pdf'))
   );
 
   const handleOpenInternalViewer = () => {
     if (firstPdfDocument?.id) {
-      window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
+      navigate(`/pdf-viewer?id=${firstPdfDocument.id}&type=document`);
     }
   };
 
