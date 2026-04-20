@@ -13,6 +13,49 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
+import { usePrefetchRoute } from "@/hooks/usePrefetch";
+
+// Static loader map — required for Vite to statically analyze dynamic imports
+const routeLoaders: Record<string, () => Promise<unknown>> = {
+  "/admin/users": () => import("@/pages/AdminUsers"),
+  "/admin/security-audit": () => import("@/pages/AdminAuditUnified"),
+  "/admin/supabase-audit": () => import("@/pages/AdminAuditUnified"),
+  "/supabase-audit": () => import("@/pages/AdminAuditUnified"),
+  "/admin/monitoring": () => import("@/pages/AdminAuditUnified"),
+  "/admin/optimization": () => import("@/pages/AdminAuditUnified"),
+  "/admin/stats": () => import("@/pages/AdminStats"),
+};
+
+const AdminToolCard = ({ tool }: { tool: { path: string; title: string; description: string; icon: any; color: string; urgent?: boolean; badge?: string } }) => {
+  const loader = routeLoaders[tool.path];
+  const prefetch = usePrefetchRoute(loader || (() => Promise.resolve()));
+  return (
+    <Link to={tool.path} {...prefetch}>
+      <Card className={`h-full transition-all duration-200 hover:shadow-lg ${
+        tool.urgent ? 'border-orange-300 hover:border-orange-400' : 'hover:border-gray-300'
+      }`}>
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center">
+              <tool.icon className={`h-6 w-6 ${tool.color} mr-3`} />
+              <CardTitle className="text-lg">{tool.title}</CardTitle>
+            </div>
+            {tool.badge && (
+              <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                {tool.badge}
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            {tool.description}
+          </p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
 
 const AdminMainDashboard = () => {
   const adminTools = [
@@ -111,30 +154,7 @@ const AdminMainDashboard = () => {
           {/* Grille des outils admin */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminTools.map((tool) => (
-              <Link key={tool.path} to={tool.path}>
-                <Card className={`h-full transition-all duration-200 hover:shadow-lg ${
-                  tool.urgent ? 'border-orange-300 hover:border-orange-400' : 'hover:border-gray-300'
-                }`}>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center">
-                        <tool.icon className={`h-6 w-6 ${tool.color} mr-3`} />
-                        <CardTitle className="text-lg">{tool.title}</CardTitle>
-                      </div>
-                      {tool.badge && (
-                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                          {tool.badge}
-                        </span>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {tool.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+              <AdminToolCard key={tool.path} tool={tool} />
             ))}
           </div>
 
