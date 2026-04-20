@@ -1,10 +1,12 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 
 const UnauthenticatedView = () => {
+  const navigate = useNavigate();
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="bg-white shadow-lg">
@@ -16,8 +18,8 @@ const UnauthenticatedView = () => {
           <p className="text-gray-600 mb-6 text-lg">
             Connectez-vous pour partager vos expériences, poser des questions et échanger avec d'autres membres de la communauté DirectivesPlus.
           </p>
-          <Button 
-            onClick={() => window.location.href = '/auth'}
+          <Button
+            onClick={() => navigate('/auth')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
             size="lg"
           >

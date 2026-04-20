@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import SecurityAuditDashboard from '@/components/admin/SecurityAuditDashboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -10,6 +10,7 @@ import BackButton from '@/components/ui/back-button';
 
 const SecurityAuditPage = () => {
   const { isAdmin, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -31,7 +32,7 @@ const SecurityAuditPage = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+        <BackButton label="Retour au Dashboard" onClick={() => navigate('/admin/dashboard')} />
         
         <Alert className="mb-6 border-blue-200 bg-blue-50">
           <Shield className="h-4 w-4 text-blue-600" />

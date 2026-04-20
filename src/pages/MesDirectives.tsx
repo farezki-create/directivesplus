@@ -2,7 +2,7 @@
 import React from "react";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Navigate } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
@@ -65,8 +65,7 @@ const MesDirectives = () => {
   }
 
   if (!shouldAllowAccess) {
-    window.location.href = '/auth';
-    return null;
+    return <Navigate to="/auth" replace />;
   }
 
   const handleUploadCompleteWrapper = () => {

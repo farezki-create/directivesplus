@@ -1,13 +1,14 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import SupabaseOptimizationPanel from '@/components/admin/SupabaseOptimizationPanel';
 import BackButton from '@/components/ui/back-button';
 
 const AdminOptimization = () => {
   const { isAdmin, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -29,7 +30,7 @@ const AdminOptimization = () => {
       <Header />
       <main className="py-8">
         <div className="container mx-auto px-4">
-          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          <BackButton label="Retour au Dashboard" onClick={() => navigate('/admin/dashboard')} />
           <SupabaseOptimizationPanel />
         </div>
       </main>
