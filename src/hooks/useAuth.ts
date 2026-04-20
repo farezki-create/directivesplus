@@ -1,13 +1,16 @@
 /**
  * Unified auth hook — single source of truth.
- * Re-exports from AuthContext so all consumers share the same shape.
+ * Re-exports from AuthContext with a backwards-compatible `loading` alias.
  *
- * Usage:
- *   import { useAuth } from "@/hooks/useAuth";
- *   // or
- *   import { useAuth } from "@/contexts/AuthContext";
- *
- * Both return the same instance (user, session, isAuthenticated, isLoading,
- * isAdmin, signOut, profile).
+ * Prefer importing from "@/contexts/AuthContext" directly in new code.
  */
-export { useAuth } from "@/contexts/AuthContext";
+import { useAuth as useAuthContext } from "@/contexts/AuthContext";
+
+export const useAuth = () => {
+  const ctx = useAuthContext();
+  return {
+    ...ctx,
+    // Backwards-compat alias used by some legacy components
+    loading: ctx.isLoading,
+  };
+};
