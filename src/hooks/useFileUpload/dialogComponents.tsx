@@ -80,7 +80,7 @@ export const PreviewDialog: React.FC<PreviewDialogProps> = ({
       
       {previewUrl && file && file.type.includes('image') && (
         <div className="flex justify-center">
-          <img 
+          <img loading="lazy" decoding="async" 
             src={previewUrl} 
             alt="Prévisualisation" 
             className="max-h-[70vh] object-contain" 

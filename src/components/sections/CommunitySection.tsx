@@ -14,7 +14,7 @@ const CommunitySection = () => {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <div className="bg-white/80 rounded-full p-4 shadow-lg">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/19f27f8b-f7ef-4752-bd9c-a0def22bc959.png" 
                 alt="Communauté DirectivesPlus" 
                 className="h-16 w-16"

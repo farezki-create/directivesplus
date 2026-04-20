@@ -56,7 +56,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
             {/* QR Code pour accès direct */}
             <div className="p-4 bg-white rounded-lg border">
               <p className="text-sm text-gray-600 mb-3">QR Code d'accès :</p>
-              <img 
+              <img loading="lazy" decoding="async" 
                 src={qrCodeUrl} 
                 alt="QR Code pour accès direct au document"
                 className="mx-auto rounded"

@@ -29,7 +29,7 @@ const DirectivesInfo = () => {
           {/* Hero Section with Image */}
           <div className="text-center mb-12">
             <div className="mb-8 flex justify-center">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/86bce663-cca0-4ea4-bc23-6aefb0b92745.png" 
                 alt="Directives Anticipées - Document et stylo" 
                 className="w-64 h-auto rounded-lg shadow-sm"

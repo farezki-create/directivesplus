@@ -86,7 +86,7 @@ export const QRCodeShareMesDirectives: React.FC<QRCodeShareMesDirectivesProps> =
               <h1>QR Code d'accès direct</h1>
               <h2 style="font-size: 14px; color: #666; margin-bottom: 20px;">${documentName}</h2>
               <div class="qr-code">
-                <img src="${qrCodeImageUrl}" alt="QR Code" onload="window.print();" />
+                <img loading="lazy" decoding="async" src="${qrCodeImageUrl}" alt="QR Code" onload="window.print();" />
               </div>
               <div class="instructions">
                 Scanner ce QR code pour accéder directement au document.<br>
@@ -165,7 +165,7 @@ export const QRCodeShareMesDirectives: React.FC<QRCodeShareMesDirectivesProps> =
   return (
     <div className="text-center space-y-6">
       <div className="p-4 bg-white rounded-lg border">
-        <img 
+        <img loading="lazy" decoding="async" 
           src={qrCodeImageUrl} 
           alt={`QR Code pour ${documentName}`}
           className="mx-auto max-w-[250px] h-auto"

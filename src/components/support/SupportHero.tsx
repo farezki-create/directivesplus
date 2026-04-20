@@ -9,7 +9,7 @@ const SupportHero = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <div className="bg-white/10 rounded-full p-4">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                 alt="DirectivesPlus" 
                 className="h-16 w-auto"
