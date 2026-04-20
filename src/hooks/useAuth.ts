@@ -1,14 +1,13 @@
-
-import { useAuth as useAuthContext } from '@/contexts/AuthContext';
-
-export const useAuth = () => {
-  const context = useAuthContext();
-  
-  return {
-    user: context.user,
-    isAuthenticated: context.isAuthenticated,
-    isLoading: context.isLoading,
-    isAdmin: context.isAdmin,
-    loading: context.isLoading
-  };
-};
+/**
+ * Unified auth hook — single source of truth.
+ * Re-exports from AuthContext so all consumers share the same shape.
+ *
+ * Usage:
+ *   import { useAuth } from "@/hooks/useAuth";
+ *   // or
+ *   import { useAuth } from "@/contexts/AuthContext";
+ *
+ * Both return the same instance (user, session, isAuthenticated, isLoading,
+ * isAdmin, signOut, profile).
+ */
+export { useAuth } from "@/contexts/AuthContext";
