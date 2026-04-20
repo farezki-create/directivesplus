@@ -15,10 +15,7 @@ import Auth from "./pages/Auth";
 
 // Lazy load: all other pages
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AuthAudit = lazy(() => import("./pages/AuthAudit"));
-const SecurityAuditPage = lazy(() => import("./pages/SecurityAuditPage"));
 const Admin = lazy(() => import("./pages/Admin"));
-const AdminStrictRLS = lazy(() => import("./pages/AdminStrictRLS"));
 const Rediger = lazy(() => import("./pages/Rediger"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Directives = lazy(() => import("./pages/Directives"));
