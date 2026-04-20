@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 
 // Eager load: landing page and auth (critical path)
@@ -73,14 +74,16 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <SecurityProvider>
-            <Router>
-              <div className="App">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <SecurityProvider>
+              <Router>
+                <div className="App">
+                  <ErrorBoundary>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
@@ -204,17 +207,19 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-                <Toaster />
-                <Sonner />
-              </div>
-            </Router>
-          </SecurityProvider>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </ErrorBoundary>
+                  <Toaster />
+                  <Sonner />
+                </div>
+              </Router>
+            </SecurityProvider>
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
