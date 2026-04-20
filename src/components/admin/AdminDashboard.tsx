@@ -74,7 +74,7 @@ export const AdminDashboard = ({ users, isLoading, onViewUserDetails }: AdminDas
               </CardContent>
             </Card>
 
-            <Link to="/admin/supabase-audit">
+            <Link to="/admin/audit?tab=database">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer border-orange-200 bg-orange-50">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">

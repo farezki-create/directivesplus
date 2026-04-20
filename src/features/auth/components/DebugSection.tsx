@@ -20,14 +20,7 @@ export const DebugSection = () => {
         
         <div className="flex gap-2 justify-center flex-wrap">
           <a
-            href="/auth-audit"
-            className="text-sm text-purple-600 hover:text-purple-800 underline"
-          >
-            🔍 Audit Email Complet
-          </a>
-          
-          <a
-            href="/auth-audit-complete"
+            href="/admin/audit?tab=auth"
             className="text-sm text-green-600 hover:text-green-800 underline font-bold"
           >
             🛡️ Audit Auth Complet

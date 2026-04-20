@@ -6,8 +6,8 @@ export const LazyIndex = lazy(() => import('@/pages/Index'));
 export const LazyAuth = lazy(() => import('@/pages/Auth'));
 export const LazyProfile = lazy(() => import('@/pages/Profile'));
 export const LazyDirectives = lazy(() => import('@/pages/Directives'));
-export const LazySupabaseAuditPage = lazy(() => import('@/pages/SupabaseAuditPage'));
 export const LazyAdminMainDashboard = lazy(() => import('@/pages/AdminMainDashboard'));
+export const LazyAdminAuditUnified = lazy(() => import('@/pages/AdminAuditUnified'));
 export const LazyPdfViewer = lazy(() => import('@/pages/PdfViewer'));
 
 // Code splitting des pages de questionnaires

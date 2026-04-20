@@ -23,7 +23,7 @@ const SecurityQuickAccess = () => {
   };
 
   const handleReportClick = () => {
-    navigate('/security-audit-report');
+    navigate('/admin/audit?tab=security');
   };
 
   return (
