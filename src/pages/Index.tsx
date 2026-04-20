@@ -201,7 +201,7 @@ const Index = () => {
 
                       <div className="mt-4 text-center">
                         <Button
-                          onClick={() => navigate('/security-audit-report')}
+                          onClick={() => navigate('/admin/audit?tab=security')}
                           variant="outline"
                           className="text-blue-600 border-blue-600 hover:bg-blue-50"
                         >

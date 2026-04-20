@@ -34,7 +34,7 @@ const SecurityQuickActions = () => {
       title: "Rapport de Conformité",
       description: "Rapport détaillé de conformité HDS",
       icon: FileText,
-      action: () => navigate('/security-audit-report'),
+      action: () => navigate('/admin/audit?tab=security'),
       color: "bg-purple-100 text-purple-600"
     },
     {

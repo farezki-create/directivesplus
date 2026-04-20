@@ -67,41 +67,11 @@ const AdminMainDashboard = () => {
       color: "text-blue-600"
     },
     {
-      title: "Audit Sécurité",
-      description: "Rapport d'audit de sécurité complet",
+      title: "Audit & Monitoring",
+      description: "Sécurité, RLS, base de données, performances — vue unifiée",
       icon: Shield,
-      path: "/admin/security-audit",
+      path: "/admin/audit",
       color: "text-green-600"
-    },
-    {
-      title: "Audit Supabase",
-      description: "Diagnostic complet de Supabase (74 warnings détectés)",
-      icon: Database,
-      path: "/admin/supabase-audit",
-      color: "text-purple-600",
-      badge: "74 warnings"
-    },
-    {
-      title: "Analyse Warnings",
-      description: "Analyser et résoudre les 74 warnings Supabase",
-      icon: AlertTriangle,
-      path: "/supabase-audit",
-      color: "text-orange-600",
-      urgent: true
-    },
-    {
-      title: "Monitoring Système",
-      description: "Surveillance en temps réel du système",
-      icon: Activity,
-      path: "/admin/monitoring",
-      color: "text-red-600"
-    },
-    {
-      title: "Optimisation Supabase",
-      description: "Outils d'optimisation de la base de données",
-      icon: Settings,
-      path: "/admin/optimization",
-      color: "text-gray-600"
     },
     {
       title: "Statistiques",
@@ -140,7 +110,7 @@ const AdminMainDashboard = () => {
                     <p className="text-orange-700 text-sm mb-3">
                       Des problèmes de configuration et de sécurité ont été identifiés et nécessitent votre attention.
                     </p>
-                    <Link to="/supabase-audit">
+                    <Link to="/admin/audit?tab=database">
                       <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100">
                         Analyser maintenant
                       </Button>
