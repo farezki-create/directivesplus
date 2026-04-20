@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,7 @@ import { Loader2, AlertCircle, Shield } from "lucide-react";
 import { useInstitutionCodeAccess } from "@/hooks/useInstitutionCodeAccess";
 
 export const InstitutionAccessForm: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     lastName: "",
     firstName: "",
@@ -64,8 +66,8 @@ export const InstitutionAccessForm: React.FC = () => {
         </Alert>
         
         <div className="flex flex-col gap-3 mt-6">
-          <Button 
-            onClick={() => window.location.href = "/mes-directives"}
+          <Button
+            onClick={() => navigate("/mes-directives")}
             className="w-full bg-blue-600 hover:bg-blue-700"
             size="lg"
           >

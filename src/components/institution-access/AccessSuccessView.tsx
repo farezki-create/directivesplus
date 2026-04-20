@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
@@ -14,6 +15,7 @@ interface AccessSuccessViewProps {
 export const AccessSuccessView: React.FC<AccessSuccessViewProps> = ({
   patientData
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <Alert className="bg-green-50 border-green-200">
@@ -28,8 +30,8 @@ export const AccessSuccessView: React.FC<AccessSuccessViewProps> = ({
       </Alert>
       
       <div className="flex flex-col gap-3 mt-6">
-        <Button 
-          onClick={() => window.location.href = "/mes-directives"}
+        <Button
+          onClick={() => navigate("/mes-directives")}
           className="w-full bg-blue-600 hover:bg-blue-700"
           size="lg"
         >

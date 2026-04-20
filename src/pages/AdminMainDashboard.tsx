@@ -1,12 +1,13 @@
 
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AdminMainDashboard from "@/components/admin/AdminMainDashboard";
 import BackButton from '@/components/ui/back-button';
 
 const AdminMainDashboardPage = () => {
   const { isLoading, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -26,7 +27,7 @@ const AdminMainDashboardPage = () => {
   return (
     <div>
       <div className="container mx-auto px-4 pt-4">
-        <BackButton label="Retour à l'accueil" onClick={() => window.location.href = '/'} />
+        <BackButton label="Retour à l'accueil" onClick={() => navigate('/')} />
       </div>
       <AdminMainDashboard />
     </div>
