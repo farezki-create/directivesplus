@@ -15,10 +15,7 @@ import Auth from "./pages/Auth";
 
 // Lazy load: all other pages
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AuthAudit = lazy(() => import("./pages/AuthAudit"));
-const SecurityAuditPage = lazy(() => import("./pages/SecurityAuditPage"));
 const Admin = lazy(() => import("./pages/Admin"));
-const AdminStrictRLS = lazy(() => import("./pages/AdminStrictRLS"));
 const Rediger = lazy(() => import("./pages/Rediger"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Directives = lazy(() => import("./pages/Directives"));
@@ -46,11 +43,9 @@ const DonCarteBancaire = lazy(() => import("./pages/DonCarteBancaire"));
 const SuiviPalliatif = lazy(() => import("./pages/SuiviPalliatif"));
 const SuiviMultiPatients = lazy(() => import("./pages/SuiviMultiPatients"));
 const AlertesSoignants = lazy(() => import("./pages/AlertesSoignants"));
-const SupabaseAuditPage = lazy(() => import("./pages/SupabaseAuditPage"));
-const AdminMonitoring = lazy(() => import("./pages/AdminMonitoring"));
-const AdminOptimization = lazy(() => import("./pages/AdminOptimization"));
 const AdminStats = lazy(() => import("./pages/AdminStats"));
 const AdminInstitutions = lazy(() => import("./pages/AdminInstitutions"));
+const AdminAuditUnified = lazy(() => import("./pages/AdminAuditUnified"));
 const AlertContactsPage = lazy(() => import("./pages/AlertContactsPage"));
 const AlertManagementPage = lazy(() => import("./pages/AlertManagementPage"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -99,7 +94,7 @@ function App() {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/soutenir" element={<Soutenir />} />
                     <Route path="/directives-info" element={<DirectivesInfo />} />
-                    <Route path="/auth-audit" element={<AuthAudit />} />
+                    <Route path="/auth-audit" element={<Navigate to="/admin/audit?tab=auth" replace />} />
                     <Route path="/avis-general" element={<AvisGeneral />} />
                     <Route path="/maintien-vie" element={<MaintienVie />} />
                     <Route path="/maladie-avancee" element={<MaladieAvancee />} />
@@ -143,54 +138,23 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
-                    <Route 
-                      path="/admin/security-audit" 
+                    {/* Unified audit dashboard — replaces 6 separate pages */}
+                    <Route
+                      path="/admin/audit"
                       element={
                         <ProtectedRoute requireAdmin={true}>
-                          <SecurityAuditPage />
+                          <AdminAuditUnified />
                         </ProtectedRoute>
-                      } 
+                      }
                     />
-                    <Route 
-                      path="/security-audit-report" 
-                      element={<Navigate to="/admin/security-audit" replace />}
-                    />
-                    <Route 
-                      path="/admin/strict-rls" 
-                      element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <AdminStrictRLS />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/admin/supabase-audit" 
-                      element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <SupabaseAuditPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/supabase-audit" 
-                      element={<Navigate to="/admin/supabase-audit" replace />}
-                    />
-                    <Route 
-                      path="/admin/monitoring" 
-                      element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <AdminMonitoring />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/admin/optimization" 
-                      element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <AdminOptimization />
-                        </ProtectedRoute>
-                      } 
-                    />
+                    {/* Legacy redirects → unified tabs */}
+                    <Route path="/admin/security-audit" element={<Navigate to="/admin/audit?tab=security" replace />} />
+                    <Route path="/security-audit-report" element={<Navigate to="/admin/audit?tab=security" replace />} />
+                    <Route path="/admin/strict-rls" element={<Navigate to="/admin/audit?tab=rls" replace />} />
+                    <Route path="/admin/supabase-audit" element={<Navigate to="/admin/audit?tab=database" replace />} />
+                    <Route path="/supabase-audit" element={<Navigate to="/admin/audit?tab=database" replace />} />
+                    <Route path="/admin/monitoring" element={<Navigate to="/admin/audit?tab=monitoring" replace />} />
+                    <Route path="/admin/optimization" element={<Navigate to="/admin/audit?tab=optimization" replace />} />
                     <Route 
                       path="/admin/stats" 
                       element={
