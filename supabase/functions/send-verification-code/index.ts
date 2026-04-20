@@ -22,10 +22,45 @@ serve(async (req) => {
       )
     }
 
+    // Basic input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (typeof email !== 'string' || !emailRegex.test(email) || email.length > 254) {
+      return new Response(
+        JSON.stringify({ error: 'Email invalide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    const allowedTypes = ['login_code', 'email_confirmation', 'password_reset']
+    if (typeof type !== 'string' || !allowedTypes.includes(type)) {
+      return new Response(
+        JSON.stringify({ error: 'Type invalide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // SECURITY: Rate limit by IP to prevent abuse (email enumeration / spam)
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '0.0.0.0'
+    try {
+      const { data: rateOk } = await supabase.rpc('check_access_code_rate_limit', {
+        p_ip_address: ipAddress,
+        p_max_attempts: 5,
+        p_window_minutes: 15,
+      })
+      if (rateOk === false) {
+        return new Response(
+          JSON.stringify({ error: 'Trop de demandes. Réessayez plus tard.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch (_) {
+      // If rate limit check fails, fail closed for safety on high-risk endpoint
+    }
 
     // Générer un code de vérification via la fonction de base de données
     const { data: codeData, error: codeError } = await supabase.rpc('generate_verification_code', {
